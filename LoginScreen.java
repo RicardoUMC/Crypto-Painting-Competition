@@ -68,31 +68,6 @@ public class LoginScreen extends Application {
         primaryStage.show();
     }
 
-    // Métodos para mostrar las interfaces de usuario específicas
-    private void showArtistaWindow(Stage primaryStage) {
-        Label label = new Label("Bienvenido, Artista!");
-        Scene scene = new Scene(label, 300, 150);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Ventana de Artista");
-        primaryStage.show();
-    }
-
-    private void showJuezWindow(Stage primaryStage) {
-        Label label = new Label("Bienvenido, Juez!");
-        Scene scene = new Scene(label, 300, 150);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Ventana de Juez");
-        primaryStage.show();
-    }
-
-    private void showPresidenteWindow(Stage primaryStage) {
-        Label label = new Label("Bienvenido, Presidente!");
-        Scene scene = new Scene(label, 300, 150);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Ventana de Presidente");
-        primaryStage.show();
-    }
-
     public static void initialize(String[] args) {
         launch(args);
     }

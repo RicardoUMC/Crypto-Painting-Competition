@@ -26,8 +26,8 @@ public class StarRatingApp extends Application {
         imageView.setPreserveRatio(true);
 
         // Imágenes de estrellas
-        Image starEmpty = new Image("estrella_sin_color.png"); // Cambia "path_to_star_empty.png"
-        Image starFilled = new Image("estrella_dorada.png"); // Cambia "path_to_star_filled.png"
+        Image starEmpty = new Image("./assets/img/estrella_sin_color.png"); // Cambia "path_to_star_empty.png"
+        Image starFilled = new Image("./assets/img/estrella_dorada.png"); // Cambia "path_to_star_filled.png"
 
         // Crear una fila de estrellas
         HBox starBox = new HBox(5);

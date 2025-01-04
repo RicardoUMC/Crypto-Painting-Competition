@@ -6,41 +6,11 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Current File",
+            "name": "StarRatingApp",
             "request": "launch",
-            "mainClass": "${file}",
+            "mainClass": "StarRatingApp",
             "vmArgs": "--module-path lib/ --add-modules javafx.controls",
-            "args": ""
-        },
-        {
-            "type": "java",
-            "name": "AESGC",
-            "request": "launch",
-            "mainClass": "AESGC",
-            "projectName": "proyecto_ee3e1f05"
-        },
-        {
-            "type": "java",
-            "name": "ArtistWindow",
-            "request": "launch",
-            "mainClass": "ArtistWindow",
-            "vmArgs": "--module-path lib/ --add-modules javafx.controls",
-            "args": "",
-            "projectName": "proyecto_ee3e1f05",
-        },
-        {
-            "type": "java",
-            "name": "ECDSA",
-            "request": "launch",
-            "mainClass": "ECDSA",
-            "projectName": "proyecto_ee3e1f05"
-        },
-        {
-            "type": "java",
-            "name": "RSA",
-            "request": "launch",
-            "mainClass": "RSA",
-            "projectName": "proyecto_ee3e1f05"
+            "projectName": "Crypto-Painting-Competition_a0a89c1"
         }
     ]
 }

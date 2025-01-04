@@ -94,7 +94,7 @@ public class LoginScreen extends Application {
         super.stop();
     }
 
-    public static void initialize(String[] args) {
+    public static void main(String[] args) {
         launch(args);
     }
 }

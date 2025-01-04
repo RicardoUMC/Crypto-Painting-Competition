@@ -83,7 +83,7 @@ public class StarRatingApp extends Application {
         }
     }
 
-    public static void main(String[] args) {
+    public static void initialize(String[] args) {
         launch(args);
     }
 }

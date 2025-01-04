@@ -9,8 +9,19 @@ import javafx.stage.Stage;
 
 public class LoginScreen extends Application {
 
+    private DatabaseManager dbManager; // Instancia de DatabaseManager
+
     @Override
     public void start(Stage primaryStage) {
+        try {
+            // Inicializar DatabaseManager
+            dbManager = new DatabaseManager();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error al conectar con la base de datos.");
+            return;
+        }
+
         // Configurar los elementos de la interfaz de usuario
         Label userLabel = new Label("Usuario:");
         Label passwordLabel = new Label("Contraseña:");
@@ -20,38 +31,43 @@ public class LoginScreen extends Application {
 
         // Configurar el evento del botón de inicio de sesión
         loginButton.setOnAction(e -> {
-            // Validar usuario y contraseña (simulado)
             String usuario = userField.getText();
-            String contraseña = passwordField.getText();
+            String contrasena = passwordField.getText();
 
-            if (usuario.isEmpty() || contraseña.isEmpty()) {
-                // Mostrar el inicio nuevamente si los campos están vacíos
-                start(primaryStage);
+            if (usuario.isEmpty() || contrasena.isEmpty()) {
+                System.out.println("Por favor, llena todos los campos.");
                 return;
             }
+
             try {
-                String userType = Servidor.login(usuario, contraseña);
-                Servidor.displayUserInterface(userType, primaryStage);
-                // String ROL = obtener rol del usuario
-                switch (/*rol*/) {
-                    case "artista":
+                // Validar usuario con DatabaseManager
+                String userType = dbManager.validarUsuario(usuario, contrasena);
+
+                if (userType == null) {
+                    System.out.println("Usuario o contraseña incorrectos.");
+                    return;
+                }
+
+                // Redirigir según el tipo de usuario
+                switch (userType.toUpperCase()) {
+                    case "CONCURSANTE":
                         ArtistWindow.ShowArtistWindow(primaryStage);
                         break;
-                    case "juez":
+                    case "JUEZ":
                         JudgeWindow.ShowJudgeWindow(primaryStage);
                         break;
-                    case "presidente":
+                    case "PRESIDENTE":
                         PresidentWindow.ShowPresidentWindow(primaryStage);
                         break;
                     default:
                         System.out.println("Rol desconocido: " + userType);
                         break;
-
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
+                System.out.println("Error durante la validación del usuario.");
             }
-});
+        });
 
         // Configurar el diseño del grid para organizar los elementos
         GridPane grid = new GridPane();
@@ -66,6 +82,15 @@ public class LoginScreen extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Administrador");
         primaryStage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        // Cerrar conexión con la base de datos al salir
+        if (dbManager != null) {
+            dbManager.close();
+        }
+        super.stop();
     }
 
     public static void initialize(String[] args) {

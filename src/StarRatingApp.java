@@ -40,7 +40,7 @@ public class StarRatingApp extends Application {
             star.setPreserveRatio(true);
 
             final int starIndex = i;
-            star.setOnMouseClicked(e -> updateRating(stars, starFilled, starEmpty, starIndex + 1));
+            star.setOnMouseClicked(_ -> updateRating(stars, starFilled, starEmpty, starIndex + 1));
 
             stars[i] = star;
             starBox.getChildren().add(star);
@@ -53,7 +53,7 @@ public class StarRatingApp extends Application {
 
         // Botón para guardar
         Button saveButton = new Button("Guardar");
-        saveButton.setOnAction(e -> {
+        saveButton.setOnAction(_ -> {
             String comment = commentField.getText();
             System.out.println("Calificación guardada: " + rating);
             System.out.println("Comentario guardado: " + comment);

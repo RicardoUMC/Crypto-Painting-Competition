@@ -12,7 +12,7 @@ public class JudgeWindow {
         Button btnCalificar = new Button("Calificar");
 
         // Configurar la acción del botón
-        btnCalificar.setOnAction(e -> {
+        btnCalificar.setOnAction(_ -> {
 
         });
 

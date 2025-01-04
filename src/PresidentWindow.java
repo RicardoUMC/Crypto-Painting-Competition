@@ -12,7 +12,7 @@ public class PresidentWindow {
         Button btnFirmar = new Button("Firmar");
 
         // Configurar la acción del botón
-        btnFirmar.setOnAction(e -> {
+        btnFirmar.setOnAction(_ -> {
 
         });
 

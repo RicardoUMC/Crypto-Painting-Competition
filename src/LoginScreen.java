@@ -31,7 +31,7 @@ public class LoginScreen extends Application {
         Button loginButton = new Button("Iniciar sesión");
 
         // Configurar el evento del botón de inicio de sesión
-        loginButton.setOnAction(e -> {
+        loginButton.setOnAction(_ -> {
             String usuario = userField.getText();
             String contrasena = passwordField.getText();
 

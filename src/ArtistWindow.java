@@ -13,11 +13,11 @@ public class ArtistWindow {
         Button btnSendPaint = new Button("Enviar Pintura");
 
         // Configurar acciones de los botones
-        btnSign.setOnAction(e -> {
+        btnSign.setOnAction(_ -> {
             Artistprocess.firmar();
 
         });
-        btnSendPaint.setOnAction(e -> {
+        btnSendPaint.setOnAction(_ -> {
             Artistprocess.enviarPintura();
         });
 

@@ -43,7 +43,7 @@ public class ArtistWindow extends Application {
 
         // Acción para enviar pintura (simulado)
         btnEnviarPintura.setOnAction(_ -> {
-            boolean enviado = ArtistProcess.enviarPintura(idUsuario);
+            boolean enviado = ArtistProcess.enviarPintura(idUsuario, primaryStage);
             if (enviado) {
                 System.out.println("Pintura enviada correctamente.");
             } else {

@@ -163,7 +163,13 @@ public class DatabaseManager {
                 if (rs.next()) {
                     return rs.getInt("total") > 0;
                 }
+            } catch (SQLException e) {
+                System.err.println("No se pudo ejecutar la consulta");
+                e.printStackTrace();
             }
+        } catch (SQLException e) {
+            System.err.println("No se pudo preparar la consulta");
+            e.printStackTrace();
         }
         return false;
     }

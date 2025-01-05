@@ -28,7 +28,7 @@ public class AESGC {
     }
 
     // Método para cifrar un archivo usando AES-GCM
-    public static void encryptFileToBase64(SecretKey secretKey, String inputFilePath) throws Exception {
+    public static void encodeFileToBase64(SecretKey secretKey, String inputFilePath) throws Exception {
         // Leer el archivo de entrada
         byte[] inputFileBytes = Files.readAllBytes(Paths.get(inputFilePath));
 
@@ -54,12 +54,12 @@ public class AESGC {
         String base64Encoded = Base64.getEncoder().encodeToString(ivAndEncrypted);
 
         // Imprimir en consola
-        System.out.println("Archivo cifrado en Base64: ");
+        System.out.println("Archivo codificado en Base64: ");
         System.out.println(base64Encoded);
     }
 
     // Método para descifrar un archivo cifrado con AES-GCM
-    public static void decryptBase64ToFile(SecretKey secretKey, String base64EncryptedData, String decryptedFilePath)
+    public static void decodeBase64ToFile(SecretKey secretKey, String base64EncryptedData, String decryptedFilePath)
             throws Exception {
         // Decodificar el string Base64 a un arreglo de bytes
         byte[] encryptedFileBytes = Base64.getDecoder().decode(base64EncryptedData);

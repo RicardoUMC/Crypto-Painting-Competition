@@ -102,15 +102,40 @@ public class ArtistProcess {
         }
     }
 
-    protected static boolean enviarPintura(int idUsuario) {
+    protected static boolean enviarPintura(int idUsuario, Stage stage) {
         try {
-            String INPUT_FILE = "descarga.jpg"; // Archivo de imagen de entrada
+            
+            // Seleccionar archivo de clave pública
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Seleccionar archivo de imagen");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de imagen", "*.jpg"));
+            File selectedFile = fileChooser.showOpenDialog(stage);
+            
+            if (selectedFile == null) {
+                System.out.println("No se seleccionó ningún archivo de imagen.");
+                return false;
+            }
+            
+            String INPUT_FILE = selectedFile.getAbsolutePath();
+
             SecretKey originalKey = AESGC.generateAESKey();
             String base64Key = Base64.getEncoder().encodeToString(originalKey.getEncoded());
             SecretKey secretKey = AESGC.decodeAESKeyFromBase64(base64Key);
-            AESGC.encryptFileToBase64(secretKey, INPUT_FILE);
+            AESGC.encodeFileToBase64(secretKey, INPUT_FILE);
+            
+            // Seleccionar archivo de clave pública
+            fileChooser = new FileChooser();
+            fileChooser.setTitle("Seleccionar archivo de clave pública");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
+            selectedFile = fileChooser.showOpenDialog(stage);
+            
+            if (selectedFile == null) {
+                System.out.println("No se seleccionó ningún archivo de clave pública.");
+                return false;
+            }
 
-            String PUBLIC_KEY_FILE = "publicKeyjuez3.txt";
+            String PUBLIC_KEY_FILE = selectedFile.getAbsolutePath();
+
             System.out.println("Llave cifrada con RSA:");
             System.out.println(RSA.encrypt(base64Key, PUBLIC_KEY_FILE));
 

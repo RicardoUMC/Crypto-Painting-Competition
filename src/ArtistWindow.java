@@ -19,7 +19,7 @@ public class ArtistWindow extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Verificar si el acuerdo de confidencialidad está firmado
-        boolean isAgreementSigned = Artistprocess.verificarAcuerdoFirmado(idUsuario);
+        boolean isAgreementSigned = ArtistProcess.verificarAcuerdoFirmado(idUsuario);
 
         // Crear botones
         Button btnFirmar = new Button("Firmar Acuerdo de Confidencialidad");
@@ -31,7 +31,7 @@ public class ArtistWindow extends Application {
 
         // Acción para firmar el acuerdo
         btnFirmar.setOnAction(_ -> {
-            boolean firmado = Artistprocess.firmar(idUsuario, primaryStage);
+            boolean firmado = ArtistProcess.firmar(idUsuario, primaryStage);
             if (firmado) {
                 btnFirmar.setDisable(true);
                 btnEnviarPintura.setDisable(false);
@@ -43,7 +43,7 @@ public class ArtistWindow extends Application {
 
         // Acción para enviar pintura (simulado)
         btnEnviarPintura.setOnAction(_ -> {
-            boolean firmado = Artistprocess.enviarPintura(idUsuario);
+            boolean firmado = ArtistProcess.enviarPintura(idUsuario);
             if (firmado) {
                 System.out.println("Pintura enviada correctamente.");
             } else {

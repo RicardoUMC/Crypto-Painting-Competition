@@ -125,10 +125,20 @@ public class ArtistProcess {
      * Verificar si el acuerdo de confidencialidad ya fue firmado.
      */
     protected static boolean verificarAcuerdoFirmado(int idUsuario) {
+        boolean result = false;
         try {
-            return dbManager.verificarAcuerdo(idUsuario);
+            dbManager = new DatabaseManager();
+
+            if (dbManager != null) {
+                result = dbManager.verificarAcuerdo(idUsuario);
+            
+                dbManager.close();
+            }
+
+            return result;
         } catch (Exception e) {
-            return false;
+            e.printStackTrace();
+            return result;
         }
     }
 }

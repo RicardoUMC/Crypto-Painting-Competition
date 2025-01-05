@@ -1,46 +1,73 @@
 package src;
+
+import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class ArtistWindow {
+public class ArtistWindow extends Application {
 
-    public static void ShowArtistWindow(Stage primaryStage) {
+    private int idUsuario; // ID del usuario actual
+
+    // Constructor para recibir el ID del usuario
+    public ArtistWindow(int idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        // Verificar si el acuerdo de confidencialidad está firmado
+        boolean isAgreementSigned = Artistprocess.verificarAcuerdoFirmado(idUsuario);
+
         // Crear botones
-        Button btnSign = new Button("Firmar");
-        Button btnSendPaint = new Button("Enviar Pintura");
+        Button btnFirmar = new Button("Firmar Acuerdo de Confidencialidad");
+        Button btnEnviarPintura = new Button("Enviar Pintura");
 
-        // Configurar acciones de los botones
-        btnSign.setOnAction(_ -> {
-            Artistprocess.firmar();
+        // Configurar el estado de los botones
+        btnFirmar.setDisable(isAgreementSigned);
+        btnEnviarPintura.setDisable(!isAgreementSigned);
 
+        // Acción para firmar el acuerdo
+        btnFirmar.setOnAction(_ -> {
+            boolean firmado = Artistprocess.firmar(idUsuario, primaryStage);
+            if (firmado) {
+                btnFirmar.setDisable(true);
+                btnEnviarPintura.setDisable(false);
+                System.out.println("Acuerdo firmado con éxito.");
+            } else {
+                System.out.println("Error al firmar el acuerdo.");
+            }
         });
-        btnSendPaint.setOnAction(_ -> {
-            Artistprocess.enviarPintura();
+
+        // Acción para enviar pintura (simulado)
+        btnEnviarPintura.setOnAction(_ -> {
+            boolean firmado = Artistprocess.enviarPintura(idUsuario);
+            if (firmado) {
+                System.out.println("Pintura enviada correctamente.");
+            } else {
+                System.out.println("Error al enviar pintura.");
+            }
         });
 
-        // Contenedor para los botones
-        HBox buttonBox = new HBox(10, btnSign, btnSendPaint);
-        buttonBox.setStyle("-fx-padding: 15; -fx-alignment: center;");
+        // Crear la interfaz gráfica
+        Label label = new Label("Bienvenido al sistema de concursantes.");
+        VBox layout = new VBox(10, label, btnFirmar, btnEnviarPintura);
+        Scene scene = new Scene(layout, 400, 200);
 
-        // Contenedor principal
-        VBox root = new VBox(buttonBox);
-        root.setStyle("-fx-padding: 20; -fx-spacing: 15; -fx-alignment: center;");
-
-        // Crear escena
-        Scene scene = new Scene(root, 300, 200);
-
-        // Configurar ventana
-        primaryStage.setTitle("Ventana con botones");
         primaryStage.setScene(scene);
+        primaryStage.setTitle("Ventana de Concursantes");
         primaryStage.show();
     }
 
-    /*
-     * public static void main(String[] args) {
-     * launch(args);
-     * }
-     */
+    // Método estático para iniciar esta ventana desde otras clases
+    public static void ShowArtistWindow(Stage stage, int idUsuario) {
+        ArtistWindow window = new ArtistWindow(idUsuario);
+        try {
+            window.start(stage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

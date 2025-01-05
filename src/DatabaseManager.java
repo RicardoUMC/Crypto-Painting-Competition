@@ -125,18 +125,59 @@ public class DatabaseManager {
         return evaluaciones;
     }
 
-    // Validar usuario para iniciar sesión
-    public String validarUsuario(String usuario, String contrasena) throws SQLException {
-        String query = "SELECT tipo_usuario FROM Usuarios WHERE usuario = ? AND contrasena = ?";
+    // Obtener ID del usuario por credenciales
+    public int obtenerIdUsuario(String usuario, String contrasena) throws SQLException {
+        String query = "SELECT id_usuario FROM Usuarios WHERE usuario = ? AND contrasena = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, usuario);
-            stmt.setString(2, contrasena); // Debe comparar el hash de la contraseña
+            stmt.setString(2, contrasena);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_usuario");
+                }
+            }
+        }
+        return -1;
+    }
+
+    // Obtener tipo de usuario por ID
+    public String obtenerTipoUsuario(int idUsuario) throws SQLException {
+        String query = "SELECT tipo_usuario FROM Usuarios WHERE id_usuario = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idUsuario);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("tipo_usuario");
                 }
             }
         }
-        return null; // Si las credenciales no son válidas
+        return null;
     }
+
+    // Verificar si el usuario ya firmó el acuerdo de confidencialidad
+    public boolean verificarAcuerdo(int idUsuario) throws SQLException {
+        String query = "SELECT COUNT(*) AS total FROM Acuerdos WHERE id_usuario = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total") > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Registrar acuerdo de confidencialidad
+    public boolean registrarAcuerdo(int idUsuario, String mensaje, String firma) throws SQLException {
+        String query = "INSERT INTO Acuerdos (id_usuario, mensaje, firma) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idUsuario);
+            stmt.setString(2, mensaje);
+            stmt.setString(3, firma);
+            stmt.executeUpdate();
+            return true;
+        }
+    }
+
 }

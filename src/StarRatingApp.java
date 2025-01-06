@@ -1,79 +1,127 @@
 package src;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-public class StarRatingApp extends Application {
-    private int rating = 0; // Variable para guardar la calificación
+import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
+import java.util.List;
 
-    @Override
-    public void start(Stage primaryStage) {
-        // Ruta de la imagen local
-        String imagePath = "descarga.jpg"; // Cambia "path_to_your_image.jpg" por la ruta de tu imagen
-        Image image = new Image(imagePath);
-        ImageView imageView = new ImageView(image);
+public class StarRatingApp {
 
-        // Ajustar tamaño de la imagen
-        imageView.setFitWidth(300);
-        imageView.setPreserveRatio(true);
+    public void showRatingApp(Stage primaryStage, int idJuez) {
+        DatabaseManager dbManager = null;
+        try {
+            // Crear conexión a la base de datos
+            dbManager = new DatabaseManager();
 
-        // Imágenes de estrellas
-        Image starEmpty = new Image("./assets/img/estrella_sin_color.png"); // Cambia "path_to_star_empty.png"
-        Image starFilled = new Image("./assets/img/estrella_dorada.png"); // Cambia "path_to_star_filled.png"
+            // Obtener la clave privada para decifrado de pinturas
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Seleccionar Clave Privada");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
-        // Crear una fila de estrellas
-        HBox starBox = new HBox(5);
-        starBox.setAlignment(Pos.CENTER);
-        ImageView[] stars = new ImageView[5];
+            String privateKeyString = new String(Files.readAllBytes(selectedFile.toPath()));
 
-        for (int i = 0; i < 5; i++) {
-            ImageView star = new ImageView(starEmpty);
-            star.setFitWidth(50);
-            star.setPreserveRatio(true);
+            // Obtener pinturas registradas
+            List<Pintura> pinturas = dbManager.obtenerPinturas();
 
-            final int starIndex = i;
-            star.setOnMouseClicked(_ -> updateRating(stars, starFilled, starEmpty, starIndex + 1));
+            // Contenedor principal con scroll
+            ScrollPane scrollPane = new ScrollPane();
+            scrollPane.setFitToWidth(true);
+            VBox mainContainer = new VBox(20);
+            mainContainer.setStyle("-fx-padding: 20; -fx-spacing: 15;");
+            scrollPane.setContent(mainContainer);
 
-            stars[i] = star;
-            starBox.getChildren().add(star);
+            // Crear secciones dinámicas para cada pintura
+            for (Pintura pintura : pinturas) {
+                HBox pinturaBox = new HBox(20);
+                pinturaBox.setStyle("-fx-padding: 10; -fx-border-color: gray; -fx-border-width: 1;");
+
+                // Decodificar y mostrar la imagen de la pintura
+                byte[] imagenBytes = JudgeProcess.descifrarPintura(dbManager, pintura, idJuez, privateKeyString);
+
+                ImageView imageView = new ImageView(new Image(new ByteArrayInputStream(imagenBytes)));
+                imageView.setFitWidth(200);
+                imageView.setPreserveRatio(true);
+
+                // Contenedor para comentarios y calificación
+                VBox detailsBox = new VBox(10);
+
+                // Campo para comentarios
+                TextArea comentarioArea = new TextArea();
+                comentarioArea.setPromptText("Escribe tu comentario...");
+                comentarioArea.setPrefRowCount(3);
+
+                // Calificación con estrellas
+                HBox starBox = new HBox(5);
+                ImageView[] stars = new ImageView[5];
+                int[] rating = { 0 }; // Almacena la calificación para esta pintura
+                Image starEmpty = new Image("./src/assets/img/estrella_sin_color.png");
+                Image starFilled = new Image("./src/assets/img/estrella_dorada.png");
+
+                for (int i = 0; i < 5; i++) {
+                    ImageView star = new ImageView(starEmpty);
+                    star.setFitWidth(30);
+                    star.setPreserveRatio(true);
+
+                    final int starIndex = i;
+                    star.setOnMouseClicked(_ -> {
+                        updateRating(stars, starFilled, starEmpty, starIndex + 1);
+                        rating[0] = starIndex + 1;
+                    });
+
+                    stars[i] = star;
+                    starBox.getChildren().add(star);
+                }
+
+                // Agregar componentes al contenedor
+                detailsBox.getChildren().addAll(
+                        new Label("Nombre de la pintura: " + pintura.getNombrePintura()),
+                        comentarioArea,
+                        new Label("Calificación:"),
+                        starBox);
+
+                // Agregar la imagen y los detalles a la sección
+                pinturaBox.getChildren().addAll(imageView, detailsBox);
+                mainContainer.getChildren().add(pinturaBox);
+            }
+
+            // Agregar botón para guardar todas las evaluaciones
+            Button saveButton = new Button("Guardar Evaluaciones");
+            saveButton.setOnAction(_ -> {
+                // Lógica para guardar calificaciones y comentarios
+                System.out.println("Evaluaciones guardadas exitosamente.");
+            });
+            mainContainer.getChildren().add(saveButton);
+
+            // Configurar escena
+            Scene scene = new Scene(scrollPane, 800, 600);
+            primaryStage.setTitle("Evaluación de Pinturas");
+            primaryStage.setScene(scene);
+            primaryStage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
-
-        // Campo de texto para comentarios
-        TextArea commentField = new TextArea();
-        commentField.setPromptText("Escribe tu comentario aquí...");
-        commentField.setWrapText(true);
-
-        // Botón para guardar
-        Button saveButton = new Button("Guardar");
-        saveButton.setOnAction(_ -> {
-            String comment = commentField.getText();
-            System.out.println("Calificación guardada: " + rating);
-            System.out.println("Comentario guardado: " + comment);
-        });
-
-        // Layout principal
-        VBox root = new VBox(20, imageView, starBox, commentField, saveButton);
-        root.setPadding(new Insets(20));
-        root.setAlignment(Pos.CENTER);
-
-        // Configuración de la escena
-        Scene scene = new Scene(root, 400, 500);
-        primaryStage.setTitle("Calificación de Pinturas");
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     // Método para actualizar las estrellas seleccionadas
     private void updateRating(ImageView[] stars, Image starFilled, Image starEmpty, int newRating) {
-        rating = newRating;
         for (int i = 0; i < stars.length; i++) {
             if (i < newRating) {
                 stars[i].setImage(starFilled);
@@ -83,7 +131,4 @@ public class StarRatingApp extends Application {
         }
     }
 
-    public static void initialize(String[] args) {
-        launch(args);
-    }
 }

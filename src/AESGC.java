@@ -54,8 +54,7 @@ public class AESGC {
         String base64Encoded = Base64.getEncoder().encodeToString(ivAndEncrypted);
 
         // Imprimir en consola
-        System.out.println("Archivo codificado en Base64: ");
-        System.out.println(base64Encoded);
+        System.out.println("Archivo codificado en Base64.");
 
         return base64Encoded;
     }

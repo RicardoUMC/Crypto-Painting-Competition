@@ -8,6 +8,11 @@ import java.util.Base64;
 
 import javax.crypto.SecretKey;
 
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -104,31 +109,41 @@ public class ArtistProcess {
 
     protected static boolean enviarPintura(int idUsuario, Stage stage) {
         try {
-            
-            // Seleccionar archivo de clave pública
+            // Crear instancia de DatabaseManager
+            dbManager = new DatabaseManager();
+
+            // Solicitar al usuario que seleccione el archivo de imagen
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Seleccionar archivo de imagen");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de imagen", "*.jpg"));
             File selectedFile = fileChooser.showOpenDialog(stage);
-            
+
             if (selectedFile == null) {
                 System.out.println("No se seleccionó ningún archivo de imagen.");
                 return false;
             }
-            
-            String INPUT_FILE = selectedFile.getAbsolutePath();
 
+            String inputFile = selectedFile.getAbsolutePath();
+
+            // Solicitar al usuario un nombre para la pintura
+            String nombrePintura = obtenerNombrePintura(stage);
+            if (nombrePintura == null || nombrePintura.isEmpty()) {
+                System.out.println("No se ingresó un nombre para la pintura.");
+                return false;
+            }
+
+            // Generar clave AES y cifrar el archivo de imagen
             SecretKey originalKey = AESGC.generateAESKey();
             String base64Key = Base64.getEncoder().encodeToString(originalKey.getEncoded());
             SecretKey secretKey = AESGC.decodeAESKeyFromBase64(base64Key);
-            AESGC.encodeFileToBase64(secretKey, INPUT_FILE);
-            
-            // Seleccionar archivo de clave pública
+            String paintingAESBase64Encoded = AESGC.encodeFileToBase64(secretKey, inputFile);
+
+            // Solicitar al usuario que seleccione el archivo de clave pública
             fileChooser = new FileChooser();
             fileChooser.setTitle("Seleccionar archivo de clave pública");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
             selectedFile = fileChooser.showOpenDialog(stage);
-            
+
             if (selectedFile == null) {
                 System.out.println("No se seleccionó ningún archivo de clave pública.");
                 return false;
@@ -136,13 +151,31 @@ public class ArtistProcess {
 
             String PUBLIC_KEY_FILE = selectedFile.getAbsolutePath();
 
-            System.out.println("Llave cifrada con RSA:");
-            System.out.println(RSA.encrypt(base64Key, PUBLIC_KEY_FILE));
+            // Cifrar la clave AES con la clave pública seleccionada
+            String wrappedKey = RSA.encrypt(base64Key, PUBLIC_KEY_FILE);
 
-            return true;
-        } catch (Exception e1) {
-            e1.printStackTrace();
+            // Registrar la pintura en la base de datos
+            boolean registroExitoso = dbManager.registrarPintura(idUsuario, nombrePintura, paintingAESBase64Encoded,
+                    wrappedKey);
+
+            if (registroExitoso) {
+                System.out.println("Pintura registrada exitosamente en la base de datos.");
+            } else {
+                System.out.println("Error al registrar la pintura en la base de datos.");
+            }
+
+            return registroExitoso;
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -156,7 +189,7 @@ public class ArtistProcess {
 
             if (dbManager != null) {
                 result = dbManager.verificarAcuerdo(idUsuario);
-            
+
                 dbManager.close();
             }
 
@@ -165,5 +198,43 @@ public class ArtistProcess {
             e.printStackTrace();
             return result;
         }
+    }
+
+    /**
+     * Abre un nuevo Stage para solicitar el nombre de la pintura.
+     *
+     * @param ownerStage Stage principal que será el dueño de la ventana emergente.
+     * @return Nombre ingresado por el usuario o null si no se confirma.
+     */
+    private static String obtenerNombrePintura(Stage ownerStage) {
+        final String[] nombrePintura = { null };
+
+        Stage inputStage = new Stage();
+        inputStage.initOwner(ownerStage);
+        inputStage.setTitle("Nombre de la Pintura");
+
+        Label label = new Label("Ingresa el nombre de la pintura:");
+        TextField textField = new TextField();
+        Button confirmButton = new Button("Confirmar");
+        Button cancelButton = new Button("Cancelar");
+
+        confirmButton.setOnAction(_ -> {
+            nombrePintura[0] = textField.getText();
+            inputStage.close();
+        });
+
+        cancelButton.setOnAction(_ -> {
+            nombrePintura[0] = null;
+            inputStage.close();
+        });
+
+        VBox layout = new VBox(10, label, textField, confirmButton, cancelButton);
+        layout.setStyle("-fx-padding: 10; -fx-alignment: center;");
+
+        Scene scene = new Scene(layout, 300, 150);
+        inputStage.setScene(scene);
+        inputStage.showAndWait();
+
+        return nombrePintura[0];
     }
 }

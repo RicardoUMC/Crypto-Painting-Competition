@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.util.Base64;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -112,7 +113,7 @@ public class ArtistProcess {
             // Crear instancia de DatabaseManager
             dbManager = new DatabaseManager();
 
-            // Solicitar al usuario que seleccione el archivo de imagen
+            // Seleccionar archivo de imagen
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Seleccionar archivo de imagen");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de imagen", "*.jpg"));
@@ -123,52 +124,57 @@ public class ArtistProcess {
                 return false;
             }
 
-            String inputFile = selectedFile.getAbsolutePath();
+            String INPUT_FILE = selectedFile.getAbsolutePath();
 
-            // Solicitar al usuario un nombre para la pintura
+            // Solicitar nombre de la pintura
             String nombrePintura = obtenerNombrePintura(stage);
             if (nombrePintura == null || nombrePintura.isEmpty()) {
                 System.out.println("No se ingresó un nombre para la pintura.");
                 return false;
             }
 
-            // Generar clave AES y cifrar el archivo de imagen
+            // Generar clave AES y cifrar la imagen
             SecretKey originalKey = AESGC.generateAESKey();
             String base64Key = Base64.getEncoder().encodeToString(originalKey.getEncoded());
             SecretKey secretKey = AESGC.decodeAESKeyFromBase64(base64Key);
-            String paintingAESBase64Encoded = AESGC.encodeFileToBase64(secretKey, inputFile);
+            String paintingAESBase64Encoded = AESGC.encodeFileToBase64(secretKey, INPUT_FILE);
 
-            // Solicitar al usuario que seleccione el archivo de clave pública
-            fileChooser = new FileChooser();
-            fileChooser.setTitle("Seleccionar archivo de clave pública");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
-            selectedFile = fileChooser.showOpenDialog(stage);
-
-            if (selectedFile == null) {
-                System.out.println("No se seleccionó ningún archivo de clave pública.");
+            // Registrar la pintura en la tabla Pinturas
+            boolean pinturaRegistrada = dbManager.registrarPintura(idUsuario, nombrePintura, paintingAESBase64Encoded);
+            if (!pinturaRegistrada) {
+                System.out.println("Error al registrar la pintura en la base de datos.");
                 return false;
             }
 
-            String PUBLIC_KEY_FILE = selectedFile.getAbsolutePath();
+            // Obtener el ID de la pintura registrada
+            int idPintura = dbManager.obtenerIdPinturaPorNombre(nombrePintura, idUsuario);
 
-            // Cifrar la clave AES con la clave pública seleccionada
-            String wrappedKey = RSA.encrypt(base64Key, PUBLIC_KEY_FILE);
+            // Obtener las claves públicas de los jueces
+            List<Integer> idsJueces = dbManager.obtenerIdsJueces();
+            for (int idJuez : idsJueces) {
+                String publicKey = dbManager.obtenerLlavePublica(idJuez);
+                if (publicKey == null) {
+                    System.out.println("No se pudo obtener la clave pública del juez con ID: " + idJuez);
+                    continue;
+                }
 
-            // Registrar la pintura en la base de datos
-            boolean registroExitoso = dbManager.registrarPintura(idUsuario, nombrePintura, paintingAESBase64Encoded,
-                    wrappedKey);
+                // Cifrar la clave AES con la clave pública del juez
+                String wrappedKey = RSA.encrypt(base64Key, publicKey);
 
-            if (registroExitoso) {
-                System.out.println("Pintura registrada exitosamente en la base de datos.");
-            } else {
-                System.out.println("Error al registrar la pintura en la base de datos.");
+                // Registrar la llave envuelta en la tabla LlavesEnvueltas
+                boolean llaveRegistrada = dbManager.registrarLlaveEnvuelta(idPintura, idJuez, wrappedKey);
+                if (!llaveRegistrada) {
+                    System.out.println("Error al registrar la llave envuelta para el juez con ID: " + idJuez);
+                }
             }
 
-            return registroExitoso;
+            System.out.println("Pintura y llaves envueltas registradas exitosamente.");
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         } finally {
+            // Cerrar la conexión a la base de datos
             if (dbManager != null) {
                 try {
                     dbManager.close();

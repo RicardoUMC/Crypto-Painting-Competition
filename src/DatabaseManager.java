@@ -74,9 +74,22 @@ public class DatabaseManager {
         return null; // Si no se encuentra el usuario
     }
 
+    public boolean actualizarLlavePublica(int idUsuario, String llavePublica) {
+        String query = "UPDATE Usuarios SET llave_publica = ? WHERE id_usuario = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, llavePublica);
+            stmt.setInt(2, idUsuario);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // Registrar una pintura
     public boolean registrarPintura(int idUsuario, String nombrePintura, String archivoCifrado) throws SQLException {
-        String query = "INSERT INTO Pinturas (id_usuario, nombre_pintura, archivo_cifrado, llave_envuelta) VALUES (?, ?, ?)";
+        String query = "INSERT INTO Pinturas (id_usuario, nombre_pintura, archivo_cifrado) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, idUsuario);
             stmt.setString(2, nombrePintura);
@@ -220,6 +233,7 @@ public class DatabaseManager {
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            System.err.println(e.getMessage());
             return false;
         }
     }

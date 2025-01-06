@@ -3,6 +3,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/tu_base_de_datos";
     private static final String DB_USER = "tu_usuario";
@@ -30,16 +32,19 @@ public class DatabaseManager {
     }
 
     // Crear un nuevo usuario
-    public void crearUsuario(String nombre, String usuario, String contrasena, String tipoUsuario, String llavePublica)
+    public void crearUsuario(String nombre, String usuario, String contrasena, String tipoUsuario)
             throws SQLException {
-        String query = "INSERT INTO Usuarios (nombre, usuario, contrasena, tipo_usuario, llave_publica) VALUES (?, ?, ?, ?, ?)";
+        String hashedPassword = BCrypt.hashpw(contrasena, BCrypt.gensalt());
+        String query = "INSERT INTO Usuarios (nombre, usuario, contrasena, tipo_usuario) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, nombre);
             stmt.setString(2, usuario);
-            stmt.setString(3, contrasena); // Asegúrate de usar un hash para la contraseña
+            stmt.setString(3, hashedPassword);
             stmt.setString(4, tipoUsuario);
-            stmt.setString(5, llavePublica);
             stmt.executeUpdate();
+            System.out.println("Usuario agregado exitosamente.");
+        } catch (SQLException ex) {
+            System.err.println("Error con la consulta a la base de datos: " + ex.getMessage());
         }
     }
 
@@ -131,13 +136,17 @@ public class DatabaseManager {
 
     // Obtener ID del usuario por credenciales
     public int obtenerIdUsuario(String usuario, String contrasena) throws SQLException {
-        String query = "SELECT id_usuario FROM Usuarios WHERE usuario = ? AND contrasena = ?";
+        String query = "SELECT id_usuario, contrasena FROM Usuarios WHERE usuario = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, usuario);
-            stmt.setString(2, contrasena);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("id_usuario");
+                    String storedPassword = rs.getString("contrasena");
+                    
+                    if (BCrypt.checkpw(contrasena, storedPassword)) {
+                        return rs.getInt("id_usuario");
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@ import javafx.stage.Stage;
 
 public class JudgeWindow {
 
-    public static void ShowJudgeWindow(Stage primaryStage) {
+    public static void ShowJudgeWindow(Stage primaryStage, int idUsuario) {
         // Crear botón "Calificar"
         Button btnCalificar = new Button("Calificar");
 

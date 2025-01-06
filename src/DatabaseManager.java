@@ -70,13 +70,17 @@ public class DatabaseManager {
     }
 
     // Registrar una pintura
-    public void registrarPintura(int idUsuario, String nombrePintura, String archivoCifrado) throws SQLException {
-        String query = "INSERT INTO Pinturas (id_usuario, nombre_pintura, archivo_cifrado) VALUES (?, ?, ?)";
+    public boolean registrarPintura(int idUsuario, String nombrePintura, String archivoCifrado) throws SQLException {
+        String query = "INSERT INTO Pinturas (id_usuario, nombre_pintura, archivo_cifrado, llave_envuelta) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, idUsuario);
             stmt.setString(2, nombrePintura);
             stmt.setString(3, archivoCifrado);
             stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -184,6 +188,45 @@ public class DatabaseManager {
             stmt.executeUpdate();
             return true;
         }
+    }
+
+    public List<Integer> obtenerIdsJueces() throws SQLException {
+        List<Integer> idsJueces = new ArrayList<>();
+        String query = "SELECT id_usuario FROM Usuarios WHERE tipo_usuario = 'JUEZ'";
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                idsJueces.add(rs.getInt("id_usuario"));
+            }
+        }
+        return idsJueces;
+    }
+
+    public boolean registrarLlaveEnvuelta(int idPintura, int idJuez, String llaveEnvuelta) throws SQLException {
+        String query = "INSERT INTO LlavesEnvueltas (id_pintura, id_juez, llave_envuelta) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idPintura);
+            stmt.setInt(2, idJuez);
+            stmt.setString(3, llaveEnvuelta);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int obtenerIdPinturaPorNombre(String nombrePintura, int idUsuario) throws SQLException {
+        String query = "SELECT id_pintura FROM Pinturas WHERE nombre_pintura = ? AND id_usuario = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, nombrePintura);
+            stmt.setInt(2, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_pintura");
+                }
+            }
+        }
+        return -1; // Si no se encuentra
     }
 
 }

@@ -58,10 +58,10 @@ public class LoginScreen extends Application {
                         ArtistWindow.ShowArtistWindow(primaryStage, idUsuario);
                         break;
                     case "JUEZ":
-                        // JudgeWindow.ShowJudgeWindow(primaryStage, idUsuario);
+                        JudgeWindow.ShowJudgeWindow(primaryStage, idUsuario);
                         break;
                     case "PRESIDENTE":
-                        // PresidentWindow.ShowPresidentWindow(primaryStage, idUsuario);
+                        PresidentWindow.ShowPresidentWindow(primaryStage, idUsuario);
                         break;
                     default:
                         System.out.println("Rol desconocido: " + userType);

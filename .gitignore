@@ -1,3 +1,5 @@
 .env
 database.sql
 .vscode/launch.json
+privKey.txt
+pubKey.txt

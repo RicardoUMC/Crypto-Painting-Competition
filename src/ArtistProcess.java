@@ -148,7 +148,8 @@ public class ArtistProcess {
             SecretKey originalKey = AESGC.generateAESKey();
             String base64Key = Base64.getEncoder().encodeToString(originalKey.getEncoded());
             SecretKey secretKey = AESGC.decodeAESKeyFromBase64(base64Key);
-            String paintingAESBase64Encoded = AESGC.encodeFileToBase64(secretKey, INPUT_FILE);
+            String paintingAESBase64Encoded = AESGC.encryptFileToBase64(secretKey, INPUT_FILE);
+            System.out.println("AES Key: " + base64Key);
 
             // Registrar la pintura en la tabla Pinturas
             boolean pinturaRegistrada = dbManager.registrarPintura(idUsuario, nombrePintura, paintingAESBase64Encoded);

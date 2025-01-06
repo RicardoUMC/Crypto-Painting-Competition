@@ -168,10 +168,11 @@ public class ArtistProcess {
                 boolean llaveRegistrada = dbManager.registrarLlaveEnvuelta(idPintura, idJuez, wrappedKey);
                 if (!llaveRegistrada) {
                     System.out.println("Error al registrar la llave envuelta para el juez con ID: " + idJuez);
+                } else {
+                    System.out.println("Pintura y llaves envueltas registradas exitosamente para el juez con ID: " + idJuez);
                 }
             }
 
-            System.out.println("Pintura y llaves envueltas registradas exitosamente.");
             return true;
         } catch (Exception e) {
             e.printStackTrace();

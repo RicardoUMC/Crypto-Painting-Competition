@@ -113,6 +113,17 @@ public class ArtistProcess {
             // Crear instancia de DatabaseManager
             dbManager = new DatabaseManager();
 
+            // Verificar si todos los jueces han subido sus claves públicas
+            List<Integer> idsJueces = dbManager.obtenerIdsJueces();
+            for (int idJuez : idsJueces) {
+                String publicKey = dbManager.obtenerLlavePublica(idJuez);
+                if (publicKey == null) {
+                    mostrarVentanaEmergente("Error",
+                            "Todos los jueces deben subir sus claves públicas\n antes de enviar la pintura. Por favor espere a\n que los jueces suban sus claves.");
+                    return false;
+                }
+            }
+
             // Seleccionar archivo de imagen
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Seleccionar archivo de imagen");
@@ -149,19 +160,11 @@ public class ArtistProcess {
             // Obtener el ID de la pintura registrada
             int idPintura = dbManager.obtenerIdPinturaPorNombre(nombrePintura, idUsuario);
 
-            // Obtener las claves públicas de los jueces
-            List<Integer> idsJueces = dbManager.obtenerIdsJueces();
+            // Encriptar la clave AES con las claves públicas de los jueces y registrar
             for (int idJuez : idsJueces) {
                 String publicKey = dbManager.obtenerLlavePublica(idJuez);
-                if (publicKey == null) {
-                    System.out.println("No se pudo obtener la clave pública del juez con ID: " + idJuez);
-                    continue;
-                }
-
-                // Cifrar la clave AES con la clave pública del juez
                 String wrappedKey = RSA.encrypt(base64Key, publicKey);
 
-                // Registrar la llave envuelta en la tabla LlavesEnvueltas
                 boolean llaveRegistrada = dbManager.registrarLlaveEnvuelta(idPintura, idJuez, wrappedKey);
                 if (!llaveRegistrada) {
                     System.out.println("Error al registrar la llave envuelta para el juez con ID: " + idJuez);
@@ -174,7 +177,6 @@ public class ArtistProcess {
             e.printStackTrace();
             return false;
         } finally {
-            // Cerrar la conexión a la base de datos
             if (dbManager != null) {
                 try {
                     dbManager.close();
@@ -242,5 +244,24 @@ public class ArtistProcess {
         inputStage.showAndWait();
 
         return nombrePintura[0];
+    }
+
+    /**
+     * Muestra una ventana emergente con un mensaje.
+     */
+    private static void mostrarVentanaEmergente(String titulo, String mensaje) {
+        Stage popupStage = new Stage();
+        popupStage.setTitle(titulo);
+
+        Label label = new Label(mensaje);
+        Button closeButton = new Button("Cerrar");
+        closeButton.setOnAction(_ -> popupStage.close());
+
+        VBox layout = new VBox(10, label, closeButton);
+        layout.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        Scene scene = new Scene(layout, 300, 150);
+        popupStage.setScene(scene);
+        popupStage.showAndWait();
     }
 }

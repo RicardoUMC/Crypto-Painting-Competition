@@ -24,6 +24,16 @@ public class JudgeWindow {
         btnCrearLlaves.setOnAction(_ -> {
             RSA.generateAndSaveKeyPair("privKey.txt", "pubKey.txt");
         });
+        
+        btnCalificar.setOnAction(_ -> {
+            StarRatingApp starRatingApp = new StarRatingApp();
+            try {
+                Stage stage = new Stage();
+                starRatingApp.showRatingApp(stage, idUsuario);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
         // Configurar la acción del botón para subir clave pública
         btnSubirClavePublica.setOnAction(_ -> {

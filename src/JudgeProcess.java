@@ -2,7 +2,9 @@ package src;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.Base64;
+import java.sql.SQLException;
+
+import javax.crypto.SecretKey;
 
 public class JudgeProcess {
 
@@ -49,6 +51,29 @@ public class JudgeProcess {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public static byte[] descifrarPintura(DatabaseManager dbManager, Pintura pintura, int idJuez, String privateKeyString) {
+        try {
+            String wrappedKey = dbManager.obtenerLlaveEnvuelta(pintura.getIdPintura(), idJuez);
+            String base64AESKey = RSA.decrypt(wrappedKey, privateKeyString);
+            if (base64AESKey == null) {
+                System.out.println("No se pudo decifrar la clave de AES");
+                return null;
+            }
+            System.out.println("AES Key: " + base64AESKey);
+            
+            SecretKey secretKey = AESGC.decodeAESKeyFromBase64(base64AESKey);
+            return AESGC.decryptBase64ToByte(secretKey, pintura.getArchivoCifrado());
+        } catch (SQLException e) {
+            System.err.println("Error al obtener llave envuelta");
+            e.printStackTrace();
+            return null; 
+        } catch (Exception e) {
+            System.err.println("Error al obtener archivo cifrado");
+            e.printStackTrace();
+            return null; 
         }
     }
 }

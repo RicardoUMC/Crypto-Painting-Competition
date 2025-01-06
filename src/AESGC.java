@@ -2,7 +2,6 @@ package src;
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
 import java.nio.file.*;
 import java.security.*;
 import java.util.Base64;
@@ -28,7 +27,7 @@ public class AESGC {
     }
 
     // Método para cifrar un archivo usando AES-GCM
-    public static String encodeFileToBase64(SecretKey secretKey, String inputFilePath) throws Exception {
+    public static String encryptFileToBase64(SecretKey secretKey, String inputFilePath) throws Exception {
         // Leer el archivo de entrada
         byte[] inputFileBytes = Files.readAllBytes(Paths.get(inputFilePath));
 
@@ -60,7 +59,7 @@ public class AESGC {
     }
 
     // Método para descifrar un archivo cifrado con AES-GCM
-    public static void decodeBase64ToFile(SecretKey secretKey, String base64EncryptedData, String decryptedFilePath)
+    public static byte[] decryptBase64ToByte(SecretKey secretKey, String base64EncryptedData)
             throws Exception {
         // Decodificar el string Base64 a un arreglo de bytes
         byte[] encryptedFileBytes = Base64.getDecoder().decode(base64EncryptedData);
@@ -81,9 +80,6 @@ public class AESGC {
         // Descifrar los datos
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
 
-        // Escribir los datos descifrados en un archivo
-        try (FileOutputStream fos = new FileOutputStream(decryptedFilePath)) {
-            fos.write(decryptedBytes);
-        }
+        return decryptedBytes;
     }
 }

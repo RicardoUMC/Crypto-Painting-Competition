@@ -103,18 +103,41 @@ public class DatabaseManager {
     }
 
     // Obtener pinturas por usuario
-    public List<String> obtenerPinturasPorUsuario(int idUsuario) throws SQLException {
-        List<String> pinturas = new ArrayList<>();
-        String query = "SELECT nombre_pintura FROM Pinturas WHERE id_usuario = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, idUsuario);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    pinturas.add(rs.getString("nombre_pintura"));
-                }
+    public List<Pintura> obtenerPinturas() throws SQLException {
+        List<Pintura> pinturas = new ArrayList<>();
+        String query = "SELECT id_usuario, id_pintura, nombre_pintura, archivo_cifrado FROM Pinturas";
+        try (PreparedStatement stmt = connection.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                int idUsuario = rs.getInt("id_usuario");
+                int idPintura = rs.getInt("id_pintura");
+                String nombrePintura = rs.getString("nombre_pintura");
+                String archivoCifrado = rs.getString("archivo_cifrado");
+
+                // Crear un objeto Pintura y agregarlo a la lista
+                Pintura pintura = new Pintura(idUsuario, idPintura, nombrePintura, archivoCifrado);
+                pinturas.add(pintura);
             }
         }
         return pinturas;
+    }
+
+    // Obtener llave envuelta por id_pintura e id_juez
+    public String obtenerLlaveEnvuelta(int idPintura, int idJuez) throws SQLException {
+        String query = "SELECT llave_envuelta FROM LlavesEnvueltas WHERE id_pintura = ? AND id_juez = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idPintura);
+            stmt.setInt(2, idJuez);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("llave_envuelta");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error al obtener la llave envuelta: " + e.getMessage());
+        }
+        return null; // Si no se encuentra
     }
 
     // Registrar una evaluación

@@ -5,8 +5,6 @@ import java.util.Base64;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.crypto.Cipher;
 
 import java.security.spec.X509EncodedKeySpec;
@@ -64,8 +62,8 @@ public class RSA {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
-            // Cifrar el mensaje
-            byte[] encryptedMessage = cipher.doFinal(message.getBytes());
+            // Cifrar el mensaje            
+            byte[] encryptedMessage = cipher.doFinal(Base64.getDecoder().decode(message));
 
             // Codificar el mensaje cifrado en Base64
             return Base64.getEncoder().encodeToString(encryptedMessage);
@@ -77,18 +75,21 @@ public class RSA {
     }
 
     // Método para descifrar un mensaje con la clave privada
-    public static String decrypt(String encryptedMessage, String privateKeyPath) {
+    public static String decrypt(String encryptedMessage, String privateKeyString) {
         try {
-            byte[] privateKeyBytes = Files.readAllBytes(Paths.get(privateKeyPath));
+            byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyString);
+            // byte[] privateKeyBytes = Files.readAllBytes(Paths.get(privateKeyString));
             PrivateKey privateKey = KeyFactory.getInstance("RSA")
-                    .generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyBytes)));
+                    .generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
             byte[] decryptedMessage = cipher.doFinal(Base64.getDecoder().decode(encryptedMessage));
-            return new String(decryptedMessage);
+            return Base64.getEncoder().encodeToString(decryptedMessage);
         } catch (Exception e) {
             System.err.println("Error al descifrar: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

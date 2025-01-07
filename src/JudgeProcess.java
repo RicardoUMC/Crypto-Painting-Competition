@@ -54,8 +54,10 @@ public class JudgeProcess {
         }
     }
 
-    public static byte[] descifrarPintura(DatabaseManager dbManager, Pintura pintura, int idJuez, String privateKeyString) {
+    public static byte[] descifrarPintura(Pintura pintura, int idJuez, String privateKeyString) {
         try {
+            dbManager = new DatabaseManager();
+
             String wrappedKey = dbManager.obtenerLlaveEnvuelta(pintura.getIdPintura(), idJuez);
             String base64AESKey = RSA.decrypt(wrappedKey, privateKeyString);
             if (base64AESKey == null) {
@@ -74,6 +76,25 @@ public class JudgeProcess {
             System.err.println("Error al obtener archivo cifrado");
             e.printStackTrace();
             return null; 
+        }
+    }
+
+    public static void subirEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) {
+        try {
+            dbManager = new DatabaseManager();
+            dbManager.registrarEvaluacion(idPintura, idJuez, calificacion, comentario);
+        } catch (SQLException e) {
+            System.err.println("Error al registrar evaluaciones");
+            e.printStackTrace();
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    System.err.println("Error al cerrar conexión con base de datos");
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

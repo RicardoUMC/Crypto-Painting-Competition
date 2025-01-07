@@ -1,4 +1,5 @@
 package src;
+import java.io.File;
 import java.sql.SQLException;
 
 import javafx.scene.Scene;
@@ -10,6 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class PresidentWindow {
@@ -20,15 +22,41 @@ public class PresidentWindow {
         Button btnFirmar = new Button("Firmar");
         Button agregarButton = new Button("Agregar usuario");
 
-        // Configurar la acción del botón
-        btnFirmar.setOnAction(_ -> {
+        // Crear botón "Subir Clave Pública"
+        Button btnSubirClavePublica = new Button("Subir Clave Pública");
 
+        // Configurar la acción del botón
+        btnFirmar.setOnAction(_ -> {            
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Seleccionar Clave Privada");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+            PresidentProcess.firmarMensajeEnmascarado(selectedFile);            
         });
         
+        
+        // Configurar la acción del botón para subir clave pública
+        btnSubirClavePublica.setOnAction(_ -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Seleccionar Clave Pública");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
+                File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+                // Delegar la funcionalidad a JudgeProcess
+                boolean resultado = JudgeProcess.subirClavePublica(idUsuario, selectedFile);
+                if (!resultado) {
+                    System.out.println("No se pudo completar la operación.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         agregarButton.setOnAction(_ -> agregaUsuario());
 
         // Contenedor para el botón
-        HBox buttonBox = new HBox(10, btnFirmar, agregarButton);
+        HBox buttonBox = new HBox(10, btnFirmar, agregarButton, btnSubirClavePublica);
         buttonBox.setStyle("-fx-padding: 15; -fx-alignment: center;");
 
         // Contenedor principal

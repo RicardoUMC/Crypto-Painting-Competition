@@ -16,7 +16,7 @@ import java.util.List;
 
 public class StarRatingApp {
 
-    private int starsQuantity = 3; // Número de estrellas
+    private int starsQuantity = 3;
 
     public void showRatingApp(Stage primaryStage, int idJuez) {
         DatabaseManager dbManager = null;
@@ -142,7 +142,11 @@ public class StarRatingApp {
                 }
 
                 try {
-                    JudgeProcess.subirEvaluacion(eval.getIdPintura(), idJuez, String.valueOf(calificacion), comentario);
+                    String mensaje = comentario.concat(Integer.toString(calificacion))
+                        .concat(Integer.toString(eval.getIdPintura()))
+                        .concat(Integer.toString(idJuez));
+
+                    JudgeProcess.subirEvaluacion(eval.getIdPintura(), idJuez, String.valueOf(calificacion), comentario, mensaje);
                 } catch (Exception e) {
                     e.printStackTrace();
                     allValid = false;
@@ -151,6 +155,7 @@ public class StarRatingApp {
 
             if (allValid) {
                 System.out.println("Todas las evaluaciones fueron guardadas exitosamente.");
+                primaryStage.close();
             } else {
                 System.err.println("Algunas evaluaciones no pudieron ser guardadas.");
             }

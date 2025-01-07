@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import src.StarRatingApp.Evaluacion;
+
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/tu_base_de_datos";
     private static final String DB_USER = "tu_usuario";
@@ -152,6 +154,23 @@ public class DatabaseManager {
             stmt.setString(4, comentario);
             stmt.executeUpdate();
         }
+    }
+
+    // Obtener evaluación existente para una pintura y un juez
+    public Evaluacion obtenerEvaluacion(int idPintura, int idJuez) throws SQLException {
+        String query = "SELECT calificacion, comentario FROM Evaluaciones WHERE id_pintura = ? AND id_juez = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idPintura);
+            stmt.setInt(2, idJuez);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int calificacion = rs.getInt("calificacion");
+                    String comentario = rs.getString("comentario");
+                    return new Evaluacion(idPintura, comentario, calificacion);
+                }
+            }
+        }
+        return null; // No existe evaluación
     }
 
     // Verificar si ya existe una evaluación para una pintura realizada por un juez

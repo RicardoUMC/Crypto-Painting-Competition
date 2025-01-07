@@ -1,8 +1,13 @@
 package src;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.math.BigInteger;
 import java.nio.file.Files;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.sql.SQLException;
+import java.util.Base64;
 
 import javax.crypto.SecretKey;
 
@@ -81,12 +86,27 @@ public class JudgeProcess {
         }
     }
 
-    public static void subirEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) {
+    public static void subirEvaluacion(int idPintura, int idJuez, String calificacion, String comentario, 
+            String mensaje) {
         try {
             dbManager = new DatabaseManager();
-            dbManager.registrarEvaluacion(idPintura, idJuez, calificacion, comentario);
+            String llavePresidenteBase64 = dbManager.obtenerLlavePresidente();
+            String juezUsuario = dbManager.obtenerUsuario(idJuez);
+            PublicKey presidentePublicKey = RSA.getPublicKeyFromBase64(llavePresidenteBase64);
+
+            BigInteger mensajeEnmascarado = generarMensajeEnmascarado(mensaje, presidentePublicKey, juezUsuario.concat("_factor_r.txt"));
+
+            // BigInteger mensajeEnmascarado = BlindSignature.enmascararMensaje(mensaje, juezUsuario, presidentePublicKey);
+
+            String mensajeEnmascaradoBase64 = Base64.getEncoder().encodeToString(mensajeEnmascarado.toByteArray());
+
+            // Llamar al método de DatabaseManager para registrar la evaluación
+            dbManager.registrarEvaluacion(idPintura, idJuez, calificacion, comentario, mensajeEnmascaradoBase64);
         } catch (SQLException e) {
             System.err.println("Error al registrar evaluaciones");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error al enmascarar el mensaje para firmado a ciegas");
             e.printStackTrace();
         } finally {
             if (dbManager != null) {
@@ -118,5 +138,33 @@ public class JudgeProcess {
                 }
             }
         }
+    }
+
+    // Generar mensaje enmascarado
+    public static BigInteger generarMensajeEnmascarado(String mensaje, PublicKey clavePublica, String archivoR) throws Exception {
+        // Generar factor aleatorio r
+        SecureRandom random = new SecureRandom();
+        BigInteger r = new BigInteger(2048, random);
+        BigInteger e = BlindSignature.obtenerExponente(clavePublica);
+        BigInteger n = BlindSignature.obtenerModulo(clavePublica);
+        r = r.mod(n); // Asegurar que r < n
+
+        // Guardar r en archivo codificado en Base64
+        try (FileOutputStream fos = new FileOutputStream(archivoR)) {
+            fos.write(Base64.getEncoder().encode(r.toByteArray()));
+        }
+
+        // Enmascarar el mensaje
+        return BlindSignature.enmascararMensaje(mensaje, r, e, n);
+    }
+
+    // Desenmascarar firma recibida del presidente
+    public static BigInteger desenmascararFirma(BigInteger firmaEnmascarada, PublicKey clavePublica, String archivoR) throws Exception {
+        // Leer r desde el archivo
+        byte[] rBytes = Base64.getDecoder().decode(Files.readAllBytes(new File(archivoR).toPath()));
+        BigInteger r = new BigInteger(1, rBytes);
+
+        // Desenmascarar la firma
+        return BlindSignature.desenmascararFirma(firmaEnmascarada, r, clavePublica);
     }
 }

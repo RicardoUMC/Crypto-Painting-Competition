@@ -1,10 +1,13 @@
 package src;
 
+import java.io.File;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class ArtistWindow extends Application {
@@ -25,6 +28,9 @@ public class ArtistWindow extends Application {
         Button btnFirmar = new Button("Firmar Acuerdo de Confidencialidad");
         Button btnEnviarPintura = new Button("Enviar Pintura");
 
+        // Crear botón "Subir Clave Pública"
+        Button btnSubirClavePublica = new Button("Subir Clave Pública");
+
         // Configurar el estado de los botones
         btnFirmar.setDisable(isAgreementSigned);
         btnEnviarPintura.setDisable(!isAgreementSigned);
@@ -41,6 +47,24 @@ public class ArtistWindow extends Application {
             }
         });
 
+        // Configurar la acción del botón para subir clave pública
+        btnSubirClavePublica.setOnAction(_ -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Seleccionar Clave Pública");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
+                File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+                // Delegar la funcionalidad a JudgeProcess
+                boolean resultado = JudgeProcess.subirClavePublica(idUsuario, selectedFile);
+                if (!resultado) {
+                    System.out.println("No se pudo completar la operación.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         // Acción para enviar pintura (simulado)
         btnEnviarPintura.setOnAction(_ -> {
             boolean enviado = ArtistProcess.enviarPintura(idUsuario, primaryStage);
@@ -53,7 +77,7 @@ public class ArtistWindow extends Application {
 
         // Crear la interfaz gráfica
         Label label = new Label("Bienvenido al sistema de concursantes.");
-        VBox layout = new VBox(10, label, btnFirmar, btnEnviarPintura);
+        VBox layout = new VBox(10, label, btnFirmar, btnEnviarPintura, btnSubirClavePublica);
         Scene scene = new Scene(layout, 400, 200);
 
         primaryStage.setScene(scene);

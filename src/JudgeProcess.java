@@ -6,6 +6,8 @@ import java.sql.SQLException;
 
 import javax.crypto.SecretKey;
 
+import src.StarRatingApp.Evaluacion;
+
 public class JudgeProcess {
 
     private static DatabaseManager dbManager;
@@ -86,6 +88,26 @@ public class JudgeProcess {
         } catch (SQLException e) {
             System.err.println("Error al registrar evaluaciones");
             e.printStackTrace();
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    System.err.println("Error al cerrar conexión con base de datos");
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static Evaluacion cargarEvaluacion(int idPintura, int idJuez) {
+        try {
+            DatabaseManager dbManager = new DatabaseManager();
+            return dbManager.obtenerEvaluacion(idPintura, idJuez);
+        } catch (SQLException e) {
+            System.err.println("Error al cargar evaluación");
+            e.printStackTrace();
+            return null;
         } finally {
             if (dbManager != null) {
                 try {

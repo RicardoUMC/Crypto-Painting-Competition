@@ -141,17 +141,32 @@ public class DatabaseManager {
     }
 
     // Registrar una evaluación
-    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario,
-            String firmaCiega) throws SQLException {
-        String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario, firma_ciega) VALUES (?, ?, ?, ?, ?)";
+    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) throws SQLException {
+        if (evaluacionExistente(idPintura, idJuez)) return;
+
+        String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, idPintura);
             stmt.setInt(2, idJuez);
             stmt.setString(3, calificacion);
             stmt.setString(4, comentario);
-            stmt.setString(5, firmaCiega);
             stmt.executeUpdate();
         }
+    }
+
+    // Verificar si ya existe una evaluación para una pintura realizada por un juez
+    public boolean evaluacionExistente(int idPintura, int idJuez) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Evaluaciones WHERE id_pintura = ? AND id_juez = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idPintura);
+            stmt.setInt(2, idJuez);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // Retorna true si existe al menos una evaluación
+                }
+            }
+        }
+        return false; // No existe la evaluación
     }
 
     // Obtener evaluaciones por pintura

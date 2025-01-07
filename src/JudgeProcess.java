@@ -144,9 +144,8 @@ public class JudgeProcess {
     public static BigInteger generarMensajeEnmascarado(String mensaje, PublicKey clavePublica, String archivoR) throws Exception {
         // Generar factor aleatorio r
         SecureRandom random = new SecureRandom();
-        BigInteger r = new BigInteger(2048, random);
-        BigInteger e = BlindSignature.obtenerExponente(clavePublica);
         BigInteger n = BlindSignature.obtenerModulo(clavePublica);
+        BigInteger r = new BigInteger(n.bitLength(), random);
         r = r.mod(n); // Asegurar que r < n
 
         // Guardar r en archivo codificado en Base64
@@ -155,7 +154,7 @@ public class JudgeProcess {
         }
 
         // Enmascarar el mensaje
-        return BlindSignature.enmascararMensaje(mensaje, r, e, n);
+        return BlindSignature.enmascararMensaje(mensaje, r, clavePublica);
     }
 
     // Desenmascarar firma recibida del presidente

@@ -3,3 +3,4 @@ database.sql
 .vscode/launch.json
 privKey.txt
 pubKey.txt
+*factor_r.txt

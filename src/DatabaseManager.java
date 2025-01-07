@@ -62,6 +62,22 @@ public class DatabaseManager {
         return usuarios;
     }
 
+    // Obtener todos los usuarios
+    public String obtenerUsuario(int idUsuario) throws SQLException {
+        String usuario = new String();
+        String query = "SELECT usuario FROM Usuarios WHERE id_usuario = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    usuario = rs.getString("usuario");
+                    return usuario;
+                }
+            }
+        }
+        return usuario;
+    }
+
     // Obtener la llave pública de un usuario
     public String obtenerLlavePublica(int idUsuario) throws SQLException {
         String query = "SELECT llave_publica FROM Usuarios WHERE id_usuario = ?";
@@ -142,16 +158,72 @@ public class DatabaseManager {
         return null; // Si no se encuentra
     }
 
+    // Obtener llave envuelta por id_pintura e id_juez
+    public String obtenerLlavePresidente() throws SQLException {
+        String query = "SELECT llave_publica FROM Usuarios WHERE tipo_usuario = 'PRESIDENTE'";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("llave_publica");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error al obtener la llave pública del presidente: " + e.getMessage());
+        }
+        return null;
+    }
+
     // Registrar una evaluación
-    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) throws SQLException {
+    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario, String mensajeEnmascarado) throws SQLException {
         if (evaluacionExistente(idPintura, idJuez)) return;
 
-        String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario, mensaje_enmascarado) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, idPintura);
             stmt.setInt(2, idJuez);
             stmt.setString(3, calificacion);
             stmt.setString(4, comentario);
+            stmt.setString(5, mensajeEnmascarado);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void guardarMensajeEnmascarado(int idEvaluacion, String mensajeEnmascarado, String factorR)
+            throws SQLException {
+        String query = "UPDATE Evaluaciones SET mensaje_enmascarado = ?, factor_r = ? WHERE id_evaluacion = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, mensajeEnmascarado);
+            stmt.setString(2, factorR);
+            stmt.setInt(3, idEvaluacion);
+            stmt.executeUpdate();
+        }
+    }
+
+    public List<MensajeEnmascarado> obtenerMensajesEnmascarados()
+            throws SQLException {
+        List<MensajeEnmascarado> mensajesEnmascarados = new ArrayList<>();
+        String query = "SELECT id_evaluacion, mensaje_enmascarado from Evaluaciones";
+        try (PreparedStatement stmt = connection.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                int idEvaluacion = rs.getInt("id_evaluacion");
+                String mensaje = rs.getString("mensaje_enmascarado");
+
+                // Crear un objeto Pintura y agregarlo a la lista
+                MensajeEnmascarado menajeEnmascarado = new MensajeEnmascarado(idEvaluacion, mensaje);
+                mensajesEnmascarados.add(menajeEnmascarado);
+            }
+        }
+        return mensajesEnmascarados;
+    }
+
+    public void guardarFirmaCiega(int idEvaluacion, String firmaCiegas)
+        throws SQLException {
+        String query = "UPDATE Evaluaciones SET firma_ciega = ? WHERE id_evaluacion = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, firmaCiegas);
+            stmt.setInt(2, idEvaluacion);
             stmt.executeUpdate();
         }
     }

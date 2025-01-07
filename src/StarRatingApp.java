@@ -103,6 +103,14 @@ public class StarRatingApp {
                 starBox.getChildren().add(star);
             }
 
+            // Cargar evaluación existente, si la hay
+            Evaluacion evaluacionExistente = JudgeProcess.cargarEvaluacion(pintura.getIdPintura(), idJuez);
+            if (evaluacionExistente != null) {
+                comentarioArea.setText(evaluacionExistente.getComentarioTexto());
+                rating[0] = evaluacionExistente.getRating()[0];
+                updateRating(stars, starFilled, starEmpty, rating[0]);
+            }
+
             // Agregar componentes al contenedor
             detailsBox.getChildren().addAll(
                     new Label("Nombre de la pintura: " + pintura.getNombrePintura()),
@@ -168,15 +176,24 @@ public class StarRatingApp {
     }
 
     // Clase auxiliar para almacenar evaluaciones
-    private static class Evaluacion {
+    protected static class Evaluacion {
         private final int idPintura;
         private final TextArea comentario;
+        private final String comentarioString;
         private final int[] rating;
 
         public Evaluacion(int idPintura, TextArea comentario, int[] rating) {
             this.idPintura = idPintura;
             this.comentario = comentario;
+            this.comentarioString = null;
             this.rating = rating;
+        }
+
+        public Evaluacion(int idPintura, String comentarioString, int calificacion) {
+            this.idPintura = idPintura;
+            this.comentario = null;
+            this.comentarioString = comentarioString;
+            this.rating = new int[] { calificacion };
         }
 
         public int getIdPintura() {
@@ -185,6 +202,10 @@ public class StarRatingApp {
 
         public TextArea getComentario() {
             return comentario;
+        }
+
+        public String getComentarioTexto() {
+            return comentarioString;
         }
 
         public int[] getRating() {

@@ -175,27 +175,25 @@ public class DatabaseManager {
     }
 
     // Registrar una evaluación
-    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario, String mensajeEnmascarado) throws SQLException {
+    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) throws SQLException {
         if (evaluacionExistente(idPintura, idJuez)) return;
 
-        String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario, mensaje_enmascarado) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, idPintura);
             stmt.setInt(2, idJuez);
             stmt.setString(3, calificacion);
             stmt.setString(4, comentario);
-            stmt.setString(5, mensajeEnmascarado);
             stmt.executeUpdate();
         }
     }
 
-    public void guardarMensajeEnmascarado(int idEvaluacion, String mensajeEnmascarado, String factorR)
+    public void registrarMensajeEnmascarado(int idJuez, String mensajeEnmascarado)
             throws SQLException {
-        String query = "UPDATE Evaluaciones SET mensaje_enmascarado = ?, factor_r = ? WHERE id_evaluacion = ?";
+        String query = "INSERT INTO FirmasCiegas (id_juez, mensaje_enmascarado) VALUES (?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, mensajeEnmascarado);
-            stmt.setString(2, factorR);
-            stmt.setInt(3, idEvaluacion);
+            stmt.setInt(1, idJuez);
+            stmt.setString(2, mensajeEnmascarado);
             stmt.executeUpdate();
         }
     }

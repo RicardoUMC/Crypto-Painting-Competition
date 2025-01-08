@@ -1,20 +1,20 @@
 package src;
 
 public class MensajeEnmascarado {
-    private int idEvaluacion;
+    private int idFirmaCiega;
     private String mensajeEnmascarado;
 
-    public MensajeEnmascarado(int idEvaluacion, String mensajeEnmascarado) {
-        this.idEvaluacion = idEvaluacion;
+    public MensajeEnmascarado(int idFirmaCiega, String mensajeEnmascarado) {
+        this.idFirmaCiega = idFirmaCiega;
         this.mensajeEnmascarado = mensajeEnmascarado;
     }
 
-    public int getIdEvaluacion() {
-        return idEvaluacion;
+    public int getIdFirmaCiega() {
+        return idFirmaCiega;
     }
 
-    public void setIdEvaluacion(int idEvaluacion) {
-        this.idEvaluacion = idEvaluacion;
+    public void setIdFirmaCiega(int idFirmaCiega) {
+        this.idFirmaCiega = idFirmaCiega;
     }
 
     public String getMensajeEnmascarado() {

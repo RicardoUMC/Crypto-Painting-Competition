@@ -216,7 +216,7 @@ public class JudgeProcess {
         return BlindSignature.enmascararMensaje(mensaje, r, clavePublica);
     }
 
-    public static boolean verificarFirmaCiega(int idPintura, int idJuez, String mensajeOriginal, File archivoR) {
+    public static boolean verificarFirmaCiega(int idJuez, String mensajeOriginal, File archivoR) {
         try {
             if (archivoR == null) {
                 System.out.println("No se seleccionó ningún archivo.");
@@ -233,7 +233,7 @@ public class JudgeProcess {
             BigInteger r = new BigInteger(1, Base64.getDecoder().decode(rBase64Encoded));
 
             // Obtener la firma ciega en Base64 desde la base de datos
-            String firmaCiegaBase64Encoded = dbManager.obtenerFirmaCiega(idPintura, idJuez);
+            String firmaCiegaBase64Encoded = dbManager.obtenerFirmaCiega(idJuez);
             if (firmaCiegaBase64Encoded == null) {
                 System.err.println("No se encontró firma ciega para la evaluación.");
                 return false;

@@ -6,30 +6,36 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import src.JudgeProcess.Evaluacion;
 
 import java.io.File;
+import java.util.List;
 
 public class JudgeWindow {
 
-    public static void ShowJudgeWindow(Stage primaryStage, int idUsuario) {
+    public static void ShowJudgeWindow(Stage primaryStage, int idJuez) {
         // Crear botón "Subir Clave Pública"
         Button btnCrearLlaves = new Button("Generar par de llaves");
 
         // Crear botón "Calificar"
         Button btnCalificar = new Button("Calificar");
 
+        // Crear botón "Verificar"
+        Button btnVerificarFirma = new Button("Verificar");
+
         // Crear botón "Subir Clave Pública"
         Button btnSubirClavePublica = new Button("Subir Clave Pública");
 
         btnCrearLlaves.setOnAction(_ -> {
-            RSA.generateAndSaveKeyPair("privKey.txt", "pubKey.txt");
+            String juezUsuario = JudgeProcess.obtenerUsuarioJuez(idJuez);
+            RSA.generateAndSaveKeyPair(juezUsuario.concat("_privKey.txt"), juezUsuario.concat("_pubKey.txt"));
         });
-        
+
         btnCalificar.setOnAction(_ -> {
             StarRatingApp starRatingApp = new StarRatingApp();
             try {
                 Stage stage = new Stage();
-                starRatingApp.showRatingApp(stage, idUsuario);
+                starRatingApp.showRatingApp(stage, idJuez);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -44,7 +50,7 @@ public class JudgeWindow {
                 File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
                 // Delegar la funcionalidad a JudgeProcess
-                boolean resultado = JudgeProcess.subirClavePublica(idUsuario, selectedFile);
+                boolean resultado = JudgeProcess.subirClavePublica(idJuez, selectedFile);
                 if (!resultado) {
                     System.out.println("No se pudo completar la operación.");
                 }
@@ -53,8 +59,34 @@ public class JudgeWindow {
             }
         });
 
+        btnVerificarFirma.setOnAction(_ -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Seleccionar Archivo de R");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
+                File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+                List<Evaluacion> resultados = JudgeProcess.obtenerEvaluaciones(idJuez);
+
+                for (Evaluacion evaluacion : resultados) {
+                    String mensajeOriginal = evaluacion.getComentarioTexto().concat(Integer.toString(evaluacion.getRating()[0]))
+                            .concat(Integer.toString(evaluacion.getIdPintura()))
+                            .concat(Integer.toString(idJuez));
+                    
+                    boolean resultado = JudgeProcess.verificarFirmaCiega(evaluacion.getIdPintura(), idJuez, mensajeOriginal, selectedFile);
+                    if (resultado) {
+                        System.out.println("Firma verificada correctamente.");
+                    } else {
+                        System.out.println("La firma de la pintura " + evaluacion.getIdPintura() + " no es válida.");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         // Contenedor para los botones
-        HBox buttonBox = new HBox(10, btnCrearLlaves, btnCalificar, btnSubirClavePublica);
+        HBox buttonBox = new HBox(10, btnCrearLlaves, btnCalificar, btnVerificarFirma, btnSubirClavePublica);
         buttonBox.setStyle("-fx-padding: 15; -fx-alignment: center;");
 
         // Contenedor principal

@@ -1,6 +1,9 @@
 package src;
+
 import java.io.File;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -34,15 +37,14 @@ public class PresidentWindow {
         });
 
         // Configurar la acción del botón
-        btnFirmar.setOnAction(_ -> {            
+        btnFirmar.setOnAction(_ -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Seleccionar Clave Privada");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
-            PresidentProcess.firmarMensajeEnmascarado(selectedFile);            
+            PresidentProcess.firmarMensajeEnmascarado(selectedFile);
         });
-        
-        
+
         // Configurar la acción del botón para subir clave pública
         btnSubirClavePublica.setOnAction(_ -> {
             try {
@@ -74,6 +76,17 @@ public class PresidentWindow {
         // Crear escena
         Scene scene = new Scene(root, 300, 200);
 
+        Button btnGanadores = new Button("Mostrar Ganadores");
+        btnGanadores.setOnAction(_ -> {
+            List<Map<String, Object>> ganadores = PresidentProcess.calcularGanadores();
+            if (!ganadores.isEmpty()) {
+                GanadoresWindow.mostrarGanadores(primaryStage, ganadores);
+            } else {
+                System.out.println("No hay evaluaciones verificadas.");
+            }
+        });
+        root.getChildren().add(btnGanadores);
+
         // Configurar ventana
         primaryStage.setTitle("Ventana del Presidente");
         primaryStage.setScene(scene);
@@ -104,7 +117,8 @@ public class PresidentWindow {
         addButton.setOnAction(_ -> {
             try {
                 dbManager = new DatabaseManager();
-                dbManager.crearUsuario(nameField.getText(), userField.getText(), passwordField.getText(), typeComboBox.getValue().toUpperCase());
+                dbManager.crearUsuario(nameField.getText(), userField.getText(), passwordField.getText(),
+                        typeComboBox.getValue().toUpperCase());
             } catch (SQLException e1) {
                 e1.printStackTrace();
             } finally {

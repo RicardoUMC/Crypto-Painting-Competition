@@ -56,7 +56,7 @@ public class PresidentProcess {
     
             for (MensajeEnmascarado mensaje : mensajes) {
                 String firmaBase64Encoded = BlindSignature.firmarMensaje(mensaje.getMensajeEnmascarado(), privateKey);
-                dbManager.guardarFirmaCiega(mensaje.getIdEvaluacion(), firmaBase64Encoded);
+                dbManager.guardarFirmaCiega(mensaje.getIdFirmaCiega(), firmaBase64Encoded);
             }
             
             System.out.println("Firmas ciegas generadas exitosamente.");

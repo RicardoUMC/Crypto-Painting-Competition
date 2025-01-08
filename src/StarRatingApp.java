@@ -19,7 +19,7 @@ public class StarRatingApp {
 
     private int starsQuantity = 3;
 
-    public void showRatingApp(Stage primaryStage, int idJuez) {
+    public void showRatingApp(Stage primaryStage, int idJuez, ArrayList<Integer> participantes) {
         DatabaseManager dbManager = null;
         List<Pintura> pinturas = new ArrayList<Pintura>();
         String privateKeyString = null;
@@ -36,11 +36,17 @@ public class StarRatingApp {
             privateKeyString = new String(Files.readAllBytes(selectedFile.toPath()));
 
             // Obtener pinturas registradas
-            pinturas = dbManager.obtenerPinturas();
+            for (Integer idUsuario : participantes) {
+                Pintura pintura = dbManager.obtenerPintura(idUsuario);
+                if (pinturas != null) {
+                    pinturas.add(pintura);
+                }
+            }
 
         } catch (Exception e) {
             System.err.println("Error al obtener pinturas registradas");
             e.printStackTrace();
+            return;
         } finally {
             if (dbManager != null) {
                 try {

@@ -25,6 +25,7 @@ public class ArtistWindow extends Application {
         boolean isAgreementSigned = ArtistProcess.verificarAcuerdoFirmado(idUsuario);
 
         // Crear botones
+        Button btnCrearLlaves = new Button("Generar par de llaves ECDSA");
         Button btnFirmar = new Button("Firmar Acuerdo de Confidencialidad");
         Button btnEnviarPintura = new Button("Enviar Pintura");
 
@@ -34,6 +35,16 @@ public class ArtistWindow extends Application {
         // Configurar el estado de los botones
         btnFirmar.setDisable(isAgreementSigned);
         btnEnviarPintura.setDisable(!isAgreementSigned);
+
+        btnCrearLlaves.setOnAction(_ -> {
+            String idConcursante = ArtistProcess.obtenerUsuarioConcursante(idUsuario);
+            try {
+                ECDSA.generateAndSaveKeyPair(idConcursante.concat("_privKey_ECDSA.txt"), idConcursante.concat("_pubKey_ECDSA.txt"));
+            } catch (Exception e) {
+                System.err.println("Error al generar par de claves ECDSA");
+                e.printStackTrace();
+            }
+        });
 
         // Acción para firmar el acuerdo
         btnFirmar.setOnAction(_ -> {
@@ -77,7 +88,7 @@ public class ArtistWindow extends Application {
 
         // Crear la interfaz gráfica
         Label label = new Label("Bienvenido al sistema de concursantes.");
-        VBox layout = new VBox(10, label, btnFirmar, btnEnviarPintura, btnSubirClavePublica);
+        VBox layout = new VBox(10, label, btnCrearLlaves, btnFirmar, btnEnviarPintura, btnSubirClavePublica);
         Scene scene = new Scene(layout, 400, 200);
 
         primaryStage.setScene(scene);

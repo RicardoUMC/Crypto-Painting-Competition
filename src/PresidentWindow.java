@@ -18,12 +18,20 @@ public class PresidentWindow {
     private static DatabaseManager dbManager; // Instancia para conexión con la base de datos
 
     public static void ShowPresidentWindow(Stage primaryStage, int idUsuario) {
+        // Crear botón "Subir Clave Pública"
+        Button btnCrearLlaves = new Button("Generar par de llaves");
+
         // Crear botón "Firmar"
         Button btnFirmar = new Button("Firmar");
         Button agregarButton = new Button("Agregar usuario");
 
         // Crear botón "Subir Clave Pública"
         Button btnSubirClavePublica = new Button("Subir Clave Pública");
+
+        btnCrearLlaves.setOnAction(_ -> {
+            String juezUsuario = PresidentProcess.obtenerUsuarioPresidente(idUsuario);
+            RSA.generateAndSaveKeyPair(juezUsuario.concat("_privKey.txt"), juezUsuario.concat("_pubKey.txt"));
+        });
 
         // Configurar la acción del botón
         btnFirmar.setOnAction(_ -> {            
@@ -56,7 +64,7 @@ public class PresidentWindow {
         agregarButton.setOnAction(_ -> agregaUsuario());
 
         // Contenedor para el botón
-        HBox buttonBox = new HBox(10, btnFirmar, agregarButton, btnSubirClavePublica);
+        HBox buttonBox = new HBox(10, btnCrearLlaves, btnFirmar, agregarButton, btnSubirClavePublica);
         buttonBox.setStyle("-fx-padding: 15; -fx-alignment: center;");
 
         // Contenedor principal

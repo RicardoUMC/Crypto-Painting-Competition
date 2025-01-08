@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import src.JudgeProcess.Evaluacion;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JudgeWindow {
@@ -32,10 +33,11 @@ public class JudgeWindow {
         });
 
         btnCalificar.setOnAction(_ -> {
+            ArrayList<Integer> participantes = JudgeProcess.validaFirmasECDSA();
             StarRatingApp starRatingApp = new StarRatingApp();
             try {
                 Stage stage = new Stage();
-                starRatingApp.showRatingApp(stage, idJuez);
+                starRatingApp.showRatingApp(stage, idJuez, participantes);
             } catch (Exception e) {
                 e.printStackTrace();
             }

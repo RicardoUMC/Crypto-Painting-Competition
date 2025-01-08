@@ -106,27 +106,45 @@ public class JudgeProcess {
         }
     }
 
-    public static void subirEvaluacion(int idPintura, int idJuez, String calificacion, String comentario, 
-            String mensaje) {
+    public static boolean subirMensaje(int idJuez, String mensaje) {
         try {
             dbManager = new DatabaseManager();
+
             String llavePresidenteBase64 = dbManager.obtenerLlavePresidente();
             String juezUsuario = dbManager.obtenerUsuario(idJuez);
             PublicKey presidentePublicKey = RSA.getPublicKeyFromBase64(llavePresidenteBase64);
-
-            BigInteger mensajeEnmascarado = generarMensajeEnmascarado(mensaje, presidentePublicKey, juezUsuario.concat("_factor_r.txt"));
-
-            // BigInteger mensajeEnmascarado = BlindSignature.enmascararMensaje(mensaje, juezUsuario, presidentePublicKey);
+            BigInteger mensajeEnmascarado = generarMensajeEnmascarado(mensaje, presidentePublicKey,
+                juezUsuario.concat("_factor_r.txt"));
+            
             byte[] unsignedBytes = BlindSignature.toUnsignedByteArray(mensajeEnmascarado);
-            String mensajeEnmascaradoBase64 = Base64.getEncoder().encodeToString(unsignedBytes);
-
-            // Llamar al método de DatabaseManager para registrar la evaluación
-            dbManager.registrarEvaluacion(idPintura, idJuez, calificacion, comentario, mensajeEnmascaradoBase64);
+            String mensajeEnmascaradoBase64Encoded = Base64.getEncoder().encodeToString(unsignedBytes);
+            dbManager.registrarMensajeEnmascarado(idJuez, mensajeEnmascaradoBase64Encoded);
+            return true;
         } catch (SQLException e) {
-            System.err.println("Error al registrar evaluaciones");
+            System.err.println("Error al registrar mensaje cegado");
             e.printStackTrace();
+            return false;
         } catch (Exception e) {
             System.err.println("Error al enmascarar el mensaje para firmado a ciegas");
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    System.err.println("Error al cerrar conexión con base de datos");
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public static void subirEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) {
+        try {
+            dbManager = new DatabaseManager();
+            dbManager.registrarEvaluacion(idPintura, idJuez, calificacion, comentario);
+        } catch (SQLException e) {
+            System.err.println("Error al registrar evaluaciones");
             e.printStackTrace();
         } finally {
             if (dbManager != null) {

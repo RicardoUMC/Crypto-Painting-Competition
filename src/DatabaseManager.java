@@ -240,11 +240,10 @@ public class DatabaseManager {
         }
     }
 
-    public String obtenerFirmaCiega(int idPintura, int idJuez) throws SQLException {
-        String query = "SELECT firma_ciega FROM Evaluaciones WHERE id_pintura = ? and id_juez = ?";
+    public String obtenerFirmaCiega(int idJuez) throws SQLException {
+        String query = "SELECT firma_ciega FROM FirmasCiegas WHERE id_juez = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, idPintura);
-            stmt.setInt(2, idJuez);
+            stmt.setInt(1, idJuez);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("firma_ciega");

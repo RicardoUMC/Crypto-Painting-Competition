@@ -9,8 +9,10 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 public class PresidentProcess {
     private static DatabaseManager dbManager;
@@ -40,25 +42,25 @@ public class PresidentProcess {
             System.out.println("No se seleccionó ningún archivo.");
             return false;
         }
-        
+
         try {
             String publicKeyBase64Encoded = new String(Files.readAllBytes(privateKeyFile.toPath()));
             byte[] privateKeyBytes = Base64.getDecoder().decode(publicKeyBase64Encoded);
             PrivateKey privateKey = KeyFactory.getInstance("RSA")
-                .generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+                    .generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 
             if (privateKey == null) {
                 throw new IllegalArgumentException("La clave privada proporcionada no es válida.");
             }
-    
+
             dbManager = new DatabaseManager();
             List<MensajeEnmascarado> mensajes = dbManager.obtenerMensajesEnmascarados();
-    
+
             for (MensajeEnmascarado mensaje : mensajes) {
                 String firmaBase64Encoded = BlindSignature.firmarMensaje(mensaje.getMensajeEnmascarado(), privateKey);
                 dbManager.guardarFirmaCiega(mensaje.getIdFirmaCiega(), firmaBase64Encoded);
             }
-            
+
             System.out.println("Firmas ciegas generadas exitosamente.");
             return true;
         } catch (IOException e) {
@@ -88,4 +90,30 @@ public class PresidentProcess {
         }
         return false;
     }
+
+    public static List<Map<String, Object>> calcularGanadores() {
+        List<Map<String, Object>> ganadores = new ArrayList<>();
+        try {
+            dbManager = new DatabaseManager();
+            ganadores = dbManager.obtenerPinturasConEvaluaciones();
+
+            // Mantener solo los tres primeros
+            if (ganadores.size() > 3) {
+                ganadores = ganadores.subList(0, 3);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al calcular ganadores: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return ganadores;
+    }
+
 }

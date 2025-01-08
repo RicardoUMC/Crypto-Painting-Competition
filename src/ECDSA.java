@@ -51,12 +51,7 @@ public class ECDSA {
         }
     }
 
-    public static PublicKey loadPublicKeyFromBase64(String filename) throws Exception {
-        // Leer el archivo que contiene la clave pública en formato Base64
-
-        // aqui se obtendria de la base datos
-        String base64Key = readFileAsString(filename);
-
+    public static PublicKey loadPublicKeyFromBase64(String base64Key) throws Exception {
         // Decodificar la clave desde Base64 a su forma binaria
         byte[] keyBytes = Base64.getDecoder().decode(base64Key);
 
@@ -78,7 +73,7 @@ public class ECDSA {
         return sb.toString();
     }
 
-    private static BigInteger[] loadRSFromHexFile(String filename) throws IOException {
+    public static BigInteger[] loadRSFromHexFile(String filename) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         BigInteger r = null, s = null;
         String line;
@@ -99,7 +94,7 @@ public class ECDSA {
         return new BigInteger[] { r, s };
     }
 
-    private static boolean verifySignature(PublicKey publicKey, byte[] message, BigInteger r, BigInteger s)
+    public static boolean verifySignature(PublicKey publicKey, byte[] message, BigInteger r, BigInteger s)
             throws Exception {
         Signature ecdsa = Signature.getInstance("SHA256withECDSA");
 
@@ -190,4 +185,27 @@ public class ECDSA {
         return new BigInteger[] { r, s };
     }
 
+    protected static class FirmaECDSA {
+        private final int idUsuario;
+        private final String mensajeECDSA;
+        private final String firmaECDSA;
+
+        public FirmaECDSA(int idUsuario, String mensajeECDSA, String firmaECDSA) {
+            this.idUsuario = idUsuario;
+            this.mensajeECDSA = mensajeECDSA;
+            this.firmaECDSA = firmaECDSA;
+        }
+
+        public int getIdUsuario() {
+            return idUsuario;
+        }
+
+        public String getMensajeECDSA() {
+            return mensajeECDSA;
+        }
+
+        public String getFirmaECDSA() {
+            return firmaECDSA;
+        }
+    }
 }

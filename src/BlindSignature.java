@@ -53,13 +53,22 @@ public class BlindSignature {
     public static BigInteger enmascararMensaje(String mensaje, BigInteger r, PublicKey publicKey) throws Exception {
         RSAKeyParameters bcPublicKey = convertToBouncyCastlePublicKey(publicKey);
 
-        BigInteger m = hashMessage(mensaje); // Hash del mensaje
-        BigInteger n = bcPublicKey.getModulus(); // Módulo
-        BigInteger e = bcPublicKey.getExponent(); // Exponente público
+        BigInteger m = hashMessage(mensaje);
+        BigInteger n = bcPublicKey.getModulus();
+        BigInteger e = bcPublicKey.getExponent();
+
+        m = m.mod(n);
 
         // Enmascarar el mensaje: M' = (M * r^e) mod n
         BigInteger result = m.multiply(r.modPow(e, n)).mod(n);
-        System.out.println("Resultado M': " + Base64.getEncoder().encodeToString(result.toByteArray()));
+
+        // Validar que el tamaño de M' sea menor a n
+        if (result.compareTo(n) >= 0) {
+            throw new IllegalArgumentException("El mensaje enmascarado excede el tamaño permitido.");
+        }
+
+        byte[] unsignedBytes = toUnsignedByteArray(result);
+        System.out.println("Resultado M': " + Base64.getEncoder().encodeToString(unsignedBytes) + " (" + unsignedBytes.length + " bytes)");
         return result;
     }
 
@@ -72,7 +81,6 @@ public class BlindSignature {
         rsaEngine.init(true, bcPrivateKey);
         
         // Convertir el mensaje a bytes y firmar
-        // byte[] mensajeBytes = mensajeEnmascarado.toByteArray();
         byte[] mensajeBytes = Base64.getDecoder().decode(mensajeEnmascarado);
         byte[] firmaBytes = rsaEngine.processBlock(mensajeBytes, 0, mensajeBytes.length);
 
@@ -97,12 +105,39 @@ public class BlindSignature {
     // Verificar la firma
     public static boolean verificarFirma(BigInteger firma, String mensaje, PublicKey publicKey) throws Exception {
         RSAKeyParameters bcPublicKey = convertToBouncyCastlePublicKey(publicKey);
-        BigInteger m = hashMessage(mensaje); // Hash del mensaje
-        BigInteger e = bcPublicKey.getExponent(); // Exponente público
-        BigInteger n = bcPublicKey.getModulus(); // Módulo
 
-        // Verificar: M == (S^e) mod n
-        BigInteger mVerificado = firma.modPow(e, n);
-        return m.equals(mVerificado);
+        // Crear el motor de cifrado RSA para verificación
+        RSABlindedEngine rsaEngine = new RSABlindedEngine();
+        rsaEngine.init(false, bcPublicKey);
+
+        BigInteger mensajeHash = hashMessage(mensaje);
+
+        byte[] firmaBytes = toUnsignedByteArray(firma);
+        byte[] mensajeVerificadoBytes = rsaEngine.processBlock(firmaBytes, 0, firmaBytes.length);
+        
+        // Convertir los bytes del mensaje verificado a BigInteger
+        BigInteger mensajeVerificado = new BigInteger(1, mensajeVerificadoBytes);
+        
+        byte[] mensajeBytes = toUnsignedByteArray(mensajeHash);
+        byte[] mensajeVBytes = toUnsignedByteArray(mensajeVerificado);
+        System.out.println("Resultado M: " + Base64.getEncoder().encodeToString(mensajeBytes));
+        System.out.println("Resultado M': " + Base64.getEncoder().encodeToString(mensajeVBytes));
+        return mensajeHash.equals(mensajeVerificado);
     }
+
+    // Convertir un BigInteger a un array de bytes sin el byte de signo extra
+    public static byte[] toUnsignedByteArray(BigInteger bigInteger) {
+        byte[] byteArray = bigInteger.toByteArray();
+
+        // Si el primer byte es 0 y el tamaño es mayor al tamaño esperado, elimina el
+        // byte de signo
+        if (byteArray.length > 1 && byteArray[0] == 0) {
+            byte[] trimmedArray = new byte[byteArray.length - 1];
+            System.arraycopy(byteArray, 1, trimmedArray, 0, trimmedArray.length);
+            return trimmedArray;
+        }
+
+        return byteArray;
+    }
+
 }

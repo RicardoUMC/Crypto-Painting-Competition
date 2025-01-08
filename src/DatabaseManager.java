@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-import src.StarRatingApp.Evaluacion;
+import src.JudgeProcess.Evaluacion;
 
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/tu_base_de_datos";
@@ -226,6 +226,38 @@ public class DatabaseManager {
             stmt.setInt(2, idEvaluacion);
             stmt.executeUpdate();
         }
+    }
+
+    public String obtenerFirmaCiega(int idPintura, int idJuez) throws SQLException {
+        String query = "SELECT firma_ciega FROM Evaluaciones WHERE id_pintura = ? and id_juez = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idPintura);
+            stmt.setInt(2, idJuez);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("firma_ciega");
+                }
+            }
+        }
+        return null;
+    }
+
+    // Obtener evaluación existente para una pintura y un juez
+    public List<Evaluacion> obtenerEvaluaciones(int idJuez) throws SQLException {
+        List<Evaluacion> evaluaciones = new ArrayList<>();
+        String query = "SELECT id_pintura, calificacion, comentario FROM Evaluaciones WHERE id_juez = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idJuez);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int idPintura = rs.getInt("id_pintura");
+                    int calificacion = rs.getInt("calificacion");
+                    String comentario = rs.getString("comentario");
+                    evaluaciones.add(new Evaluacion(idPintura, comentario, calificacion));
+                }
+            }
+        }
+        return evaluaciones;
     }
 
     // Obtener evaluación existente para una pintura y un juez

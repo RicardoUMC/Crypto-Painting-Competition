@@ -201,27 +201,41 @@ public class DatabaseManager {
     public List<MensajeEnmascarado> obtenerMensajesEnmascarados()
             throws SQLException {
         List<MensajeEnmascarado> mensajesEnmascarados = new ArrayList<>();
-        String query = "SELECT id_evaluacion, mensaje_enmascarado from Evaluaciones";
+        String query = "SELECT id_firma_ciega, mensaje_enmascarado from FirmasCiegas";
         try (PreparedStatement stmt = connection.prepareStatement(query);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                int idEvaluacion = rs.getInt("id_evaluacion");
+                int idFirmaCiega = rs.getInt("id_firma_ciega");
                 String mensaje = rs.getString("mensaje_enmascarado");
 
                 // Crear un objeto Pintura y agregarlo a la lista
-                MensajeEnmascarado menajeEnmascarado = new MensajeEnmascarado(idEvaluacion, mensaje);
+                MensajeEnmascarado menajeEnmascarado = new MensajeEnmascarado(idFirmaCiega, mensaje);
                 mensajesEnmascarados.add(menajeEnmascarado);
             }
         }
         return mensajesEnmascarados;
     }
 
-    public void guardarFirmaCiega(int idEvaluacion, String firmaCiegas)
+    public String obtenerMensajeEnmascarado(int idJuez)
+            throws SQLException {
+        String query = "SELECT mensaje_enmascarado from FirmasCiegas WHERE id_juez = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idJuez);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("mensaje_enmascarado");
+                }
+            }
+        }
+        return null;
+    }
+
+    public void guardarFirmaCiega(int idFirmaCiega, String firmaCiegas)
         throws SQLException {
-        String query = "UPDATE Evaluaciones SET firma_ciega = ? WHERE id_evaluacion = ?";
+        String query = "UPDATE FirmasCiegas SET firma_ciega = ? WHERE id_firma_ciega = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, firmaCiegas);
-            stmt.setInt(2, idEvaluacion);
+            stmt.setInt(2, idFirmaCiega);
             stmt.executeUpdate();
         }
     }

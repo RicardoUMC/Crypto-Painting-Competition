@@ -68,17 +68,18 @@ public class JudgeWindow {
 
                 List<Evaluacion> resultados = JudgeProcess.obtenerEvaluaciones(idJuez);
 
+                String mensajeOriginal = new String();
                 for (Evaluacion evaluacion : resultados) {
-                    String mensajeOriginal = evaluacion.getComentarioTexto().concat(Integer.toString(evaluacion.getRating()[0]))
+                    mensajeOriginal = mensajeOriginal.concat(evaluacion.getComentarioTexto()).concat(Integer.toString(evaluacion.getRating()[0]))
                             .concat(Integer.toString(evaluacion.getIdPintura()))
                             .concat(Integer.toString(idJuez));
-                    
-                    boolean resultado = JudgeProcess.verificarFirmaCiega(evaluacion.getIdPintura(), idJuez, mensajeOriginal, selectedFile);
-                    if (resultado) {
-                        System.out.println("Firma verificada correctamente.");
-                    } else {
-                        System.out.println("La firma de la pintura " + evaluacion.getIdPintura() + " no es válida.");
-                    }
+                }
+                
+                boolean resultado = JudgeProcess.verificarFirmaCiega(idJuez, mensajeOriginal, selectedFile);
+                if (resultado) {
+                    System.out.println("Firma verificada correctamente.");
+                } else {
+                    System.out.println("La firma de la pintura no es válida.");
                 }
             } catch (Exception e) {
                 e.printStackTrace();

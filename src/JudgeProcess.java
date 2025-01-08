@@ -2,21 +2,76 @@ package src;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 import javax.crypto.SecretKey;
 
 import javafx.scene.control.TextArea;
+import src.ECDSA.FirmaECDSA;
 
 public class JudgeProcess {
-    
+
     private static DatabaseManager dbManager;
+
+    public static ArrayList<Integer> validaFirmasECDSA() {
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        try {
+            dbManager = new DatabaseManager();
+
+            List<FirmaECDSA> firmasECDSA = dbManager.obtenerAcuerdosECDSA();
+
+            for (FirmaECDSA firma : firmasECDSA) {
+                String llavePublicaBase64Encoded = dbManager.obtenerLlavePublica(firma.getIdUsuario());
+                PublicKey llavePublica = ECDSA.loadPublicKeyFromBase64(llavePublicaBase64Encoded);
+
+                byte[] firmaBytes = Base64.getDecoder().decode(firma.getFirmaECDSA());
+
+                // Obtener r y s de la firma
+                BigInteger[] rsValues = ECDSA.decodeRSFromDER(firmaBytes);
+                BigInteger r = rsValues[0];
+                BigInteger s = rsValues[1];
+
+                byte[] mensajeBytes = Base64.getDecoder().decode(firma.getMensajeECDSA());
+
+                if (ECDSA.verifySignature(llavePublica, mensajeBytes, r, s)) {
+                    System.out.println("Firma validada");
+                    list.add(firma.getIdUsuario());
+                } else {
+                    System.out.println("Firma no válida");
+                }
+            }
+
+            return list;
+        } catch (SQLException e) {
+            System.err.println("Error al validar firma ECDSA de los concursantes");
+            e.printStackTrace();
+            return list;
+        } catch (IOException e) {
+            System.err.println("Error al obtener valores r y s de la firma");
+            e.printStackTrace();
+            return list;
+        } catch (Exception e) {
+            System.err.println("Error al verificar la firma");
+            e.printStackTrace();
+            return list;
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     public static String obtenerUsuarioJuez(int idJuez) {
         try {
@@ -92,17 +147,17 @@ public class JudgeProcess {
                 return null;
             }
             System.out.println("AES Key: " + base64AESKey);
-            
+
             SecretKey secretKey = AESGC.decodeAESKeyFromBase64(base64AESKey);
             return AESGC.decryptBase64ToByte(secretKey, pintura.getArchivoCifrado());
         } catch (SQLException e) {
             System.err.println("Error al obtener llave envuelta");
             e.printStackTrace();
-            return null; 
+            return null;
         } catch (Exception e) {
             System.err.println("Error al obtener archivo cifrado");
             e.printStackTrace();
-            return null; 
+            return null;
         }
     }
 
@@ -114,8 +169,8 @@ public class JudgeProcess {
             String juezUsuario = dbManager.obtenerUsuario(idJuez);
             PublicKey presidentePublicKey = RSA.getPublicKeyFromBase64(llavePresidenteBase64);
             BigInteger mensajeEnmascarado = generarMensajeEnmascarado(mensaje, presidentePublicKey,
-                juezUsuario.concat("_factor_r.txt"));
-            
+                    juezUsuario.concat("_factor_r.txt"));
+
             byte[] unsignedBytes = BlindSignature.toUnsignedByteArray(mensajeEnmascarado);
             String mensajeEnmascaradoBase64Encoded = Base64.getEncoder().encodeToString(unsignedBytes);
             dbManager.registrarMensajeEnmascarado(idJuez, mensajeEnmascaradoBase64Encoded);
@@ -139,6 +194,7 @@ public class JudgeProcess {
             }
         }
     }
+
     public static void subirEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) {
         try {
             dbManager = new DatabaseManager();
@@ -199,7 +255,8 @@ public class JudgeProcess {
     }
 
     // Generar mensaje enmascarado
-    public static BigInteger generarMensajeEnmascarado(String mensaje, PublicKey clavePublica, String archivoR) throws Exception {
+    public static BigInteger generarMensajeEnmascarado(String mensaje, PublicKey clavePublica, String archivoR)
+            throws Exception {
         // Generar factor aleatorio r
         SecureRandom random = new SecureRandom();
         BigInteger n = BlindSignature.obtenerModulo(clavePublica);
@@ -226,7 +283,8 @@ public class JudgeProcess {
             dbManager = new DatabaseManager();
             String llavePresidenteBase64Encoded = dbManager.obtenerLlavePresidente();
             PublicKey llavePresidente = RSA.getPublicKeyFromBase64(llavePresidenteBase64Encoded);
-            // BigInteger llavePresidente = new BigInteger(1, Base64.getDecoder().decode(llavePresidenteBase64Encoded));
+            // BigInteger llavePresidente = new BigInteger(1,
+            // Base64.getDecoder().decode(llavePresidenteBase64Encoded));
 
             // Leer contenido del archivo como texto
             String rBase64Encoded = new String(Files.readAllBytes(archivoR.toPath()));

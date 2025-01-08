@@ -1,10 +1,12 @@
 package src;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import src.ECDSA.FirmaECDSA;
 import src.JudgeProcess.Evaluacion;
 
 public class DatabaseManager {
@@ -121,6 +123,25 @@ public class DatabaseManager {
     }
 
     // Obtener pinturas por usuario
+    public Pintura obtenerPintura(int idUsuario) throws SQLException {
+        String query = "SELECT id_pintura, nombre_pintura, archivo_cifrado FROM Pinturas WHERE id_usuario = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int idPintura = rs.getInt("id_pintura");
+                    String nombrePintura = rs.getString("nombre_pintura");
+                    String archivoCifrado = rs.getString("archivo_cifrado");
+
+                    // Crear un objeto Pintura y agregarlo a la lista
+                    return new Pintura(idUsuario, idPintura, nombrePintura, archivoCifrado);
+                }
+            }
+        }
+        return null;
+    }
+
+    // Obtener pinturas por usuario
     public List<Pintura> obtenerPinturas() throws SQLException {
         List<Pintura> pinturas = new ArrayList<>();
         String query = "SELECT id_usuario, id_pintura, nombre_pintura, archivo_cifrado FROM Pinturas";
@@ -175,8 +196,10 @@ public class DatabaseManager {
     }
 
     // Registrar una evaluación
-    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario) throws SQLException {
-        if (evaluacionExistente(idPintura, idJuez)) return;
+    public void registrarEvaluacion(int idPintura, int idJuez, String calificacion, String comentario)
+            throws SQLException {
+        if (evaluacionExistente(idPintura, idJuez))
+            return;
 
         String query = "INSERT INTO Evaluaciones (id_pintura, id_juez, calificacion, comentario) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -231,7 +254,7 @@ public class DatabaseManager {
     }
 
     public void guardarFirmaCiega(int idFirmaCiega, String firmaCiegas)
-        throws SQLException {
+            throws SQLException {
         String query = "UPDATE FirmasCiegas SET firma_ciega = ? WHERE id_firma_ciega = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, firmaCiegas);
@@ -328,7 +351,7 @@ public class DatabaseManager {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String storedPassword = rs.getString("contrasena");
-                    
+
                     if (BCrypt.checkpw(contrasena, storedPassword)) {
                         return rs.getInt("id_usuario");
                     }
@@ -393,6 +416,23 @@ public class DatabaseManager {
             }
         }
         return idsJueces;
+    }
+
+    public List<FirmaECDSA> obtenerAcuerdosECDSA() {
+        List<FirmaECDSA> acuerdos = new ArrayList<>();
+        String query = "SELECT id_usuario, mensaje, firma FROM Acuerdos";
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                int idUsuario = rs.getInt("id_usuario");
+                String mensaje = rs.getString("mensaje");
+                String firma = rs.getString("firma");
+                acuerdos.add(new FirmaECDSA(idUsuario, mensaje, firma));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener acuerdos");
+            e.printStackTrace();
+        }
+        return acuerdos;
     }
 
     public boolean registrarLlaveEnvuelta(int idPintura, int idJuez, String llaveEnvuelta) throws SQLException {

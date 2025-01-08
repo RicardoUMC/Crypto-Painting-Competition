@@ -126,22 +126,22 @@ public class ECDSA {
         ByteArrayOutputStream rsStream = new ByteArrayOutputStream();
 
         // Codificar r
-        byte[] rBytes = r.toByteArray();
+        byte[] rBytes = BlindSignature.toUnsignedByteArray(r);
         rsStream.write(0x02); // Tag para entero
         rsStream.write(rBytes.length);
         rsStream.write(rBytes);
-
+        
         // Codificar s
-        byte[] sBytes = s.toByteArray();
+        byte[] sBytes = BlindSignature.toUnsignedByteArray(s);
         rsStream.write(0x02); // Tag para entero
         rsStream.write(sBytes.length);
         rsStream.write(sBytes);
-
+        
         // Escribir la longitud total de r y s en el outStream
         byte[] rsBytes = rsStream.toByteArray();
         outStream.write(rsBytes.length);
         outStream.write(rsBytes);
-
+        
         return outStream.toByteArray();
     }
 

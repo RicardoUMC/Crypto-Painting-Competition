@@ -80,7 +80,7 @@ public class PresidentWindow {
         btnGanadores.setOnAction(_ -> {
             List<Map<String, Object>> ganadores = PresidentProcess.calcularGanadores();
             if (!ganadores.isEmpty()) {
-                GanadoresWindow.mostrarGanadores(primaryStage, ganadores);
+                WinnersWindow.mostrarGanadores(primaryStage, ganadores);
             } else {
                 System.out.println("No hay evaluaciones verificadas.");
             }

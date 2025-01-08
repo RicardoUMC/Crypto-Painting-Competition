@@ -2,7 +2,9 @@ package src;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -464,4 +466,40 @@ public class DatabaseManager {
         return -1; // Si no se encuentra
     }
 
+    public List<Map<String, Object>> obtenerPinturasConEvaluaciones() throws SQLException {
+        List<Map<String, Object>> pinturasConCalificacion = new ArrayList<>();
+        String query = """
+                    SELECT p.nombre_pintura, SUM(e.calificacion) AS calificacion_total
+                    FROM Pinturas p
+                    INNER JOIN Evaluaciones e ON p.id_pintura = e.id_pintura
+                    WHERE e.validado = TRUE
+                    GROUP BY p.id_pintura, p.nombre_pintura
+                    ORDER BY calificacion_total DESC;
+                """;
+
+        try (Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                Map<String, Object> pinturaData = new HashMap<>();
+                pinturaData.put("nombrePintura", rs.getString("nombre_pintura"));
+                pinturaData.put("calificacionTotal", rs.getInt("calificacion_total"));
+                pinturasConCalificacion.add(pinturaData);
+            }
+        }
+        return pinturasConCalificacion;
+    }
+
+    public void actualizarEstadoValidado(int idJuez) throws SQLException {
+        String query = "UPDATE Evaluaciones SET validado = TRUE WHERE id_juez = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, idJuez);
+            int filasActualizadas = stmt.executeUpdate();
+            System.out.println("Estado de validado actualizado para " + filasActualizadas
+                    + " evaluaciones del juez con ID: " + idJuez);
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar el estado de validado: " + e.getMessage());
+            throw e;
+        }
+    }
 }

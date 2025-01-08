@@ -7,6 +7,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import src.JudgeProcess.Evaluacion;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -180,41 +181,4 @@ public class StarRatingApp {
         }
     }
 
-    // Clase auxiliar para almacenar evaluaciones
-    protected static class Evaluacion {
-        private final int idPintura;
-        private final TextArea comentario;
-        private final String comentarioString;
-        private final int[] rating;
-
-        public Evaluacion(int idPintura, TextArea comentario, int[] rating) {
-            this.idPintura = idPintura;
-            this.comentario = comentario;
-            this.comentarioString = null;
-            this.rating = rating;
-        }
-
-        public Evaluacion(int idPintura, String comentarioString, int calificacion) {
-            this.idPintura = idPintura;
-            this.comentario = null;
-            this.comentarioString = comentarioString;
-            this.rating = new int[] { calificacion };
-        }
-
-        public int getIdPintura() {
-            return idPintura;
-        }
-
-        public TextArea getComentario() {
-            return comentario;
-        }
-
-        public String getComentarioTexto() {
-            return comentarioString;
-        }
-
-        public int[] getRating() {
-            return rating;
-        }
-    }
 }

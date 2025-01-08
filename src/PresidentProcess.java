@@ -15,6 +15,25 @@ import java.util.List;
 public class PresidentProcess {
     private static DatabaseManager dbManager;
 
+    public static String obtenerUsuarioPresidente(int idPresidente) {
+        try {
+            dbManager = new DatabaseManager();
+            return dbManager.obtenerUsuario(idPresidente);
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el usuario del presidente");
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     // Firmar el mensaje enmascarado
     public static boolean firmarMensajeEnmascarado(File privateKeyFile) {
         if (privateKeyFile == null) {

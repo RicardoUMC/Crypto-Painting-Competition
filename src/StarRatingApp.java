@@ -132,6 +132,7 @@ public class StarRatingApp {
         saveButton.setOnAction(_ -> {
             boolean allValid = true;
 
+            String mensaje = new String();
             for (Evaluacion eval : evaluaciones) {
                 String comentario = eval.getComentario().getText();
                 int calificacion = eval.getRating()[0];
@@ -143,18 +144,18 @@ public class StarRatingApp {
                 }
 
                 try {
-                    String mensaje = comentario.concat(Integer.toString(calificacion))
+                    mensaje = mensaje.concat(comentario).concat(Integer.toString(calificacion))
                         .concat(Integer.toString(eval.getIdPintura()))
                         .concat(Integer.toString(idJuez));
 
-                    JudgeProcess.subirEvaluacion(eval.getIdPintura(), idJuez, String.valueOf(calificacion), comentario, mensaje);
+                    JudgeProcess.subirEvaluacion(eval.getIdPintura(), idJuez, String.valueOf(calificacion), comentario);
                 } catch (Exception e) {
                     e.printStackTrace();
                     allValid = false;
                 }
             }
 
-            if (allValid) {
+            if (allValid && JudgeProcess.subirMensaje(idJuez, mensaje)) {
                 System.out.println("Todas las evaluaciones fueron guardadas exitosamente.");
                 primaryStage.close();
             } else {

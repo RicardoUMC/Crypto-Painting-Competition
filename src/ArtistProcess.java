@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.util.List;
 
@@ -210,6 +211,25 @@ public class ArtistProcess {
         }
     }
 
+        public static String obtenerUsuarioConcursante(int idUsuario) {
+        try {
+            dbManager = new DatabaseManager();
+            return dbManager.obtenerUsuario(idUsuario);
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el usuario del concursante");
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (dbManager != null) {
+                try {
+                    dbManager.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
     /**
      * Abre un nuevo Stage para solicitar el nombre de la pintura.
      *

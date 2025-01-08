@@ -307,6 +307,7 @@ public class JudgeProcess {
             boolean esValida = BlindSignature.verificarFirma(firmaDesenmascarada, mensajeOriginal, llavePresidente);
 
             if (esValida) {
+                dbManager.actualizarEstadoValidado(idJuez);
                 System.out.println("Firma ciega verificada correctamente.");
             } else {
                 System.err.println("La firma ciega no es válida.");

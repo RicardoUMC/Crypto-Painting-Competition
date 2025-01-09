@@ -20,7 +20,7 @@ import javafx.stage.Stage;
 public class PresidentWindow {
     private static DatabaseManager dbManager; // Instancia para conexión con la base de datos
 
-    public static void ShowPresidentWindow(Stage primaryStage, int idUsuario) {
+    public static void ShowPresidentWindow(Stage primaryStage, int idUsuario, String usuarioString) {
         // Crear botón "Subir Clave Pública"
         Button btnCrearLlaves = new Button("Generar par de llaves");
 
@@ -31,13 +31,13 @@ public class PresidentWindow {
         // Crear botón "Subir Clave Pública"
         Button btnSubirClavePublica = new Button("Subir Clave Pública");
 
-        btnCrearLlaves.setOnAction(_ -> {
+        btnCrearLlaves.setOnAction(event -> {
             String juezUsuario = PresidentProcess.obtenerUsuarioPresidente(idUsuario);
             RSA.generateAndSaveKeyPair(juezUsuario.concat("_privKey.txt"), juezUsuario.concat("_pubKey.txt"));
         });
 
         // Configurar la acción del botón
-        btnFirmar.setOnAction(_ -> {
+        btnFirmar.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Seleccionar Clave Privada");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de texto", "*.txt"));
@@ -46,7 +46,7 @@ public class PresidentWindow {
         });
 
         // Configurar la acción del botón para subir clave pública
-        btnSubirClavePublica.setOnAction(_ -> {
+        btnSubirClavePublica.setOnAction(event -> {
             try {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Seleccionar Clave Pública");
@@ -63,7 +63,7 @@ public class PresidentWindow {
             }
         });
 
-        agregarButton.setOnAction(_ -> agregaUsuario());
+        agregarButton.setOnAction(event -> agregaUsuario());
 
         // Contenedor para el botón
         HBox buttonBox = new HBox(10, btnCrearLlaves, btnFirmar, agregarButton, btnSubirClavePublica);
@@ -77,7 +77,7 @@ public class PresidentWindow {
         Scene scene = new Scene(root, 300, 200);
 
         Button btnGanadores = new Button("Mostrar Ganadores");
-        btnGanadores.setOnAction(_ -> {
+        btnGanadores.setOnAction(event -> {
             List<Map<String, Object>> ganadores = PresidentProcess.calcularGanadores();
             if (!ganadores.isEmpty()) {
                 WinnersWindow.mostrarGanadores(primaryStage, ganadores);
@@ -87,8 +87,21 @@ public class PresidentWindow {
         });
         root.getChildren().add(btnGanadores);
 
+        // Botón para cerrar sesión
+        Button logoutButton = new Button("Cerrar sesión");
+        logoutButton.setOnAction(event -> {
+            LoginScreen loginScreen = new LoginScreen();
+            try {
+                loginScreen.start(primaryStage); // Regresa al login
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        root.getChildren().add(logoutButton);
+
         // Configurar ventana
-        primaryStage.setTitle("Ventana del Presidente");
+        primaryStage.setTitle("Ventana del Presidente ("+ usuarioString + ")");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -114,7 +127,7 @@ public class PresidentWindow {
         grid.add(typeComboBox, 1, 3);
         grid.add(addButton, 1, 4);
 
-        addButton.setOnAction(_ -> {
+        addButton.setOnAction(event -> {
             try {
                 dbManager = new DatabaseManager();
                 dbManager.crearUsuario(nameField.getText(), userField.getText(), passwordField.getText(),

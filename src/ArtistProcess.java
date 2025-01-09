@@ -248,12 +248,12 @@ public class ArtistProcess {
         Button confirmButton = new Button("Confirmar");
         Button cancelButton = new Button("Cancelar");
 
-        confirmButton.setOnAction(_ -> {
+        confirmButton.setOnAction(event -> {
             nombrePintura[0] = textField.getText();
             inputStage.close();
         });
 
-        cancelButton.setOnAction(_ -> {
+        cancelButton.setOnAction(event -> {
             nombrePintura[0] = null;
             inputStage.close();
         });
@@ -277,7 +277,7 @@ public class ArtistProcess {
 
         Label label = new Label(mensaje);
         Button closeButton = new Button("Cerrar");
-        closeButton.setOnAction(_ -> popupStage.close());
+        closeButton.setOnAction(event -> popupStage.close());
 
         VBox layout = new VBox(10, label, closeButton);
         layout.setStyle("-fx-padding: 20; -fx-alignment: center;");

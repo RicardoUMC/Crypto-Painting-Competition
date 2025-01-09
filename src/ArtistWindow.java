@@ -13,10 +13,12 @@ import javafx.stage.Stage;
 public class ArtistWindow extends Application {
 
     private int idUsuario; // ID del usuario actual
+    private String usuarioString; // ID del usuario actual
 
     // Constructor para recibir el ID del usuario
-    public ArtistWindow(int idUsuario) {
+    public ArtistWindow(int idUsuario, String usuarioString) {
         this.idUsuario = idUsuario;
+        this.usuarioString = usuarioString;
     }
 
     @Override
@@ -36,7 +38,7 @@ public class ArtistWindow extends Application {
         btnFirmar.setDisable(isAgreementSigned);
         btnEnviarPintura.setDisable(!isAgreementSigned);
 
-        btnCrearLlaves.setOnAction(_ -> {
+        btnCrearLlaves.setOnAction(event -> {
             String idConcursante = ArtistProcess.obtenerUsuarioConcursante(idUsuario);
             try {
                 ECDSA.generateAndSaveKeyPair(idConcursante.concat("_privKey_ECDSA.txt"), idConcursante.concat("_pubKey_ECDSA.txt"));
@@ -47,7 +49,7 @@ public class ArtistWindow extends Application {
         });
 
         // Acción para firmar el acuerdo
-        btnFirmar.setOnAction(_ -> {
+        btnFirmar.setOnAction(event -> {
             boolean firmado = ArtistProcess.firmar(idUsuario, primaryStage);
             if (firmado) {
                 btnFirmar.setDisable(true);
@@ -59,7 +61,7 @@ public class ArtistWindow extends Application {
         });
 
         // Configurar la acción del botón para subir clave pública
-        btnSubirClavePublica.setOnAction(_ -> {
+        btnSubirClavePublica.setOnAction(event -> {
             try {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Seleccionar Clave Pública");
@@ -77,7 +79,7 @@ public class ArtistWindow extends Application {
         });
 
         // Acción para enviar pintura (simulado)
-        btnEnviarPintura.setOnAction(_ -> {
+        btnEnviarPintura.setOnAction(event -> {
             boolean enviado = ArtistProcess.enviarPintura(idUsuario, primaryStage);
             if (enviado) {
                 System.out.println("Pintura enviada correctamente.");
@@ -92,15 +94,30 @@ public class ArtistWindow extends Application {
         Scene scene = new Scene(layout, 400, 200);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Ventana de Concursantes");
+        primaryStage.setTitle("Ventana de Concursantes (" + usuarioString + ")");
         primaryStage.show();
     }
 
     // Método estático para iniciar esta ventana desde otras clases
-    public static void ShowArtistWindow(Stage stage, int idUsuario) {
-        ArtistWindow window = new ArtistWindow(idUsuario);
+    public static void ShowArtistWindow(Stage stage, int idUsuario, String usuarioString) {
+        ArtistWindow window = new ArtistWindow(idUsuario, usuarioString);
         try {
             window.start(stage);
+
+            // Botón para cerrar sesión
+            Button logoutButton = new Button("Cerrar sesión");
+            logoutButton.setOnAction(event -> {
+                LoginScreen loginScreen = new LoginScreen();
+                try {
+                    loginScreen.start(stage); // Regresa al login
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            // Añadir el botón al layout
+            VBox layout = (VBox) stage.getScene().getRoot();
+            layout.getChildren().add(logoutButton);
         } catch (Exception e) {
             e.printStackTrace();
         }

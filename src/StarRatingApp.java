@@ -101,7 +101,7 @@ public class StarRatingApp {
                 star.setPreserveRatio(true);
 
                 final int starIndex = i;
-                star.setOnMouseClicked(_ -> {
+                star.setOnMouseClicked(event -> {
                     updateRating(stars, starFilled, starEmpty, starIndex + 1);
                     rating[0] = starIndex + 1;
                 });
@@ -135,7 +135,7 @@ public class StarRatingApp {
 
         // Agregar botón para guardar todas las evaluaciones
         Button saveButton = new Button("Guardar Evaluaciones");
-        saveButton.setOnAction(_ -> {
+        saveButton.setOnAction(event -> {
             boolean allValid = true;
 
             String mensaje = new String();

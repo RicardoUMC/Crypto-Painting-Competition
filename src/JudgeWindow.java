@@ -14,7 +14,7 @@ import java.util.List;
 
 public class JudgeWindow {
 
-    public static void ShowJudgeWindow(Stage primaryStage, int idJuez) {
+    public static void ShowJudgeWindow(Stage primaryStage, int idJuez, String usuarioString) {
         // Crear botón "Subir Clave Pública"
         Button btnCrearLlaves = new Button("Generar par de llaves");
 
@@ -27,12 +27,12 @@ public class JudgeWindow {
         // Crear botón "Subir Clave Pública"
         Button btnSubirClavePublica = new Button("Subir Clave Pública");
 
-        btnCrearLlaves.setOnAction(_ -> {
+        btnCrearLlaves.setOnAction(event -> {
             String juezUsuario = JudgeProcess.obtenerUsuarioJuez(idJuez);
             RSA.generateAndSaveKeyPair(juezUsuario.concat("_privKey.txt"), juezUsuario.concat("_pubKey.txt"));
         });
 
-        btnCalificar.setOnAction(_ -> {
+        btnCalificar.setOnAction(event -> {
             ArrayList<Integer> participantes = JudgeProcess.validaFirmasECDSA();
             StarRatingApp starRatingApp = new StarRatingApp();
             try {
@@ -44,7 +44,7 @@ public class JudgeWindow {
         });
 
         // Configurar la acción del botón para subir clave pública
-        btnSubirClavePublica.setOnAction(_ -> {
+        btnSubirClavePublica.setOnAction(event -> {
             try {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Seleccionar Clave Pública");
@@ -61,7 +61,7 @@ public class JudgeWindow {
             }
         });
 
-        btnVerificarFirma.setOnAction(_ -> {
+        btnVerificarFirma.setOnAction(event -> {
             try {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Seleccionar Archivo de R");
@@ -96,11 +96,24 @@ public class JudgeWindow {
         VBox root = new VBox(buttonBox);
         root.setStyle("-fx-padding: 20; -fx-spacing: 15; -fx-alignment: center;");
 
+        // Botón para cerrar sesión
+        Button logoutButton = new Button("Cerrar sesión");
+        logoutButton.setOnAction(event -> {
+            LoginScreen loginScreen = new LoginScreen();
+            try {
+                loginScreen.start(primaryStage); // Regresa al login
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        root.getChildren().add(logoutButton);
+
         // Crear escena
         Scene scene = new Scene(root, 300, 200);
 
         // Configurar ventana
-        primaryStage.setTitle("Ventana del Juez");
+        primaryStage.setTitle("Ventana del Juez ("+ usuarioString + ")");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

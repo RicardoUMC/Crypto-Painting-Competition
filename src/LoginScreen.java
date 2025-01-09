@@ -29,7 +29,7 @@ public class LoginScreen extends Application {
         PasswordField passwordField = new PasswordField();
         Button loginButton = new Button("Iniciar sesión");
 
-        loginButton.setOnAction(_ -> {
+        loginButton.setOnAction(event -> {
             String usuario = userField.getText();
             String contrasena = passwordField.getText();
 
@@ -55,13 +55,13 @@ public class LoginScreen extends Application {
                 // Redirigir según el tipo de usuario
                 switch (userType.toUpperCase()) {
                     case "CONCURSANTE":
-                        ArtistWindow.ShowArtistWindow(primaryStage, idUsuario);
+                        ArtistWindow.ShowArtistWindow(primaryStage, idUsuario, usuario);
                         break;
                     case "JUEZ":
-                        JudgeWindow.ShowJudgeWindow(primaryStage, idUsuario);
+                        JudgeWindow.ShowJudgeWindow(primaryStage, idUsuario, usuario);
                         break;
                     case "PRESIDENTE":
-                        PresidentWindow.ShowPresidentWindow(primaryStage, idUsuario);
+                        PresidentWindow.ShowPresidentWindow(primaryStage, idUsuario, usuario);
                         break;
                     default:
                         System.out.println("Rol desconocido: " + userType);

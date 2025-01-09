@@ -8,9 +8,12 @@ import java.util.Map;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -23,13 +26,59 @@ public class PresidentWindow {
     public static void ShowPresidentWindow(Stage primaryStage, int idUsuario, String usuarioString) {
         // Crear botón "Subir Clave Pública"
         Button btnCrearLlaves = new Button("Generar par de llaves");
+        Image llave = new Image("./src/assets/img/llaves.png");
+
+        // Crear el ImageView para mostrar el ícono
+        ImageView llaveView = new ImageView(llave);
+
+        llaveView.setFitWidth(80); // Ancho del ícono
+        llaveView.setFitHeight(80);
+        btnCrearLlaves.setGraphic(llaveView); // Agregar ícono
+
+        // Configurar la posición del ícono
+        btnCrearLlaves.setContentDisplay(ContentDisplay.TOP);
 
         // Crear botón "Firmar"
         Button btnFirmar = new Button("Firmar");
+        Image firma = new Image("./src/assets/img/firma.png");
+
+        // Crear el ImageView para mostrar el ícono
+        ImageView firmaView = new ImageView(firma);
+
+        firmaView.setFitWidth(80); // Ancho del ícono
+        firmaView.setFitHeight(80);
+       btnFirmar.setGraphic(firmaView); // Agregar ícono
+
+        // Configurar la posición del ícono
+        btnFirmar.setContentDisplay(ContentDisplay.TOP);
+
+         // Crear botón "Agregar usuario"
         Button agregarButton = new Button("Agregar usuario");
+        Image usuario = new Image("./src/assets/img/usuario.png");
+
+        // Crear el ImageView para mostrar el ícono
+        ImageView usuarioView = new ImageView(usuario);
+
+        usuarioView.setFitWidth(80); // Ancho del ícono
+       usuarioView.setFitHeight(80);
+        agregarButton.setGraphic(usuarioView); // Agregar ícono
+
+        // Configurar la posición del ícono
+        agregarButton.setContentDisplay(ContentDisplay.TOP);
 
         // Crear botón "Subir Clave Pública"
         Button btnSubirClavePublica = new Button("Subir Clave Pública");
+        Image subir = new Image("./src/assets/img/subir.png");
+
+        // Crear el ImageView para mostrar el ícono
+        ImageView subirView = new ImageView(subir);
+
+        subirView.setFitWidth(80); // Ancho del ícono
+        subirView.setFitHeight(80);
+       btnSubirClavePublica.setGraphic(subirView); // Agregar ícono
+
+        // Configurar la posición del ícono
+        btnSubirClavePublica.setContentDisplay(ContentDisplay.TOP);
 
         btnCrearLlaves.setOnAction(event -> {
             String juezUsuario = PresidentProcess.obtenerUsuarioPresidente(idUsuario);
@@ -74,9 +123,22 @@ public class PresidentWindow {
         root.setStyle("-fx-padding: 20; -fx-spacing: 15; -fx-alignment: center;");
 
         // Crear escena
-        Scene scene = new Scene(root, 300, 200);
+        Scene scene = new Scene(root, 600, 450);
 
         Button btnGanadores = new Button("Mostrar Ganadores");
+
+        Image podio = new Image("./src/assets/img/ganadores.png");
+
+        // Crear el ImageView para mostrar el ícono
+        ImageView ganadoresView = new ImageView(podio);
+
+        ganadoresView.setFitWidth(80); // Ancho del ícono
+       ganadoresView.setFitHeight(80);
+        btnGanadores.setGraphic(ganadoresView); // Agregar ícono
+
+        // Configurar la posición del ícono
+        btnGanadores.setContentDisplay(ContentDisplay.TOP);
+
         btnGanadores.setOnAction(event -> {
             List<Map<String, Object>> ganadores = PresidentProcess.calcularGanadores();
             if (!ganadores.isEmpty()) {
@@ -89,6 +151,18 @@ public class PresidentWindow {
 
         // Botón para cerrar sesión
         Button logoutButton = new Button("Cerrar sesión");
+        Image cerrarsesion = new Image("./src/assets/img/cerrar_sesion.png");
+
+        // Crear el ImageView para mostrar el ícono
+        ImageView cerrarsesionView = new ImageView(cerrarsesion);
+
+        cerrarsesionView.setFitWidth(80); // Ancho del ícono
+        cerrarsesionView.setFitHeight(80);
+       logoutButton.setGraphic(cerrarsesionView); // Agregar ícono
+
+        // Configurar la posición del ícono
+        logoutButton.setContentDisplay(ContentDisplay.TOP);
+
         logoutButton.setOnAction(event -> {
             LoginScreen loginScreen = new LoginScreen();
             try {

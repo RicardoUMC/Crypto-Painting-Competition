@@ -12,9 +12,9 @@ import src.ECDSA.FirmaECDSA;
 import src.JudgeProcess.Evaluacion;
 
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/tu_base_de_datos";
-    private static final String DB_USER = "tu_usuario";
-    private static final String DB_PASSWORD = "tu_contraseña";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/painting_competition";
+    private static final String DB_USER = "luis";
+    private static final String DB_PASSWORD = "Anubis97";
 
     private Connection connection;
 
